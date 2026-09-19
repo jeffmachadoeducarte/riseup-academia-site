@@ -33,7 +33,15 @@ Precisam de resposta antes de apontar um domínio real.
   e nas prévias de compartilhamento — se ficar errado, o SEO sai errado.
 - **Onde muda:** variável `NEXT_PUBLIC_SITE_URL` no EasyPanel.
 
-### 4. Domingo
+### 4. Horário de sábado — **conflito aberto**
+- **Publicado hoje:** 9h às 15h
+- **Origem:** a placa na fachada da academia, legível no primeiro frame do
+  vídeo institucional, e confirmada pelo AcademiasBR.
+- **Conflito:** o layout aprovado pelo cliente traz "Sábado 8h–12h e 14h–18h".
+- **Precisamos:** confirmar qual vale. Se for o do layout, a placa está
+  desatualizada e trocamos em `src/config/site.ts` → `horarios.lista`.
+
+### 5. Domingo
 - **Publicado hoje:** Fechado
 - **Origem:** dois diretórios indicam fechado; a placa da fachada não cita
   domingo.
@@ -41,9 +49,42 @@ Precisam de resposta antes de apontar um domínio real.
 
 ---
 
+## 🔴 Bloqueiam a área do aluno em produção
+
+A área do aluno funciona hoje com dados de demonstração. Para abrir para
+alunos de verdade, estes itens são obrigatórios.
+
+### 5. Responsável técnico pelos treinos (CREF)
+- **Situação:** os 4 treinos cadastrados são **modelos de demonstração**, sem
+  prescrição individual. O app os exibe com aviso âmbar dizendo isso.
+- **Precisamos:** um profissional de educação física que revise, ajuste e
+  assine cada treino (nome + CREF). Assinado, o aviso some.
+- **Por quê:** prescrição de exercício é ato profissional. Entregar treino sem
+  responsável técnico expõe a academia e o aluno.
+
+### 6. Responsável técnico pelas receitas (CRN)
+- **Situação:** as 8 receitas são sugestões gerais, também marcadas como
+  demonstração.
+- **Precisamos:** nutricionista que revise e assine (nome + CRN), ou a decisão
+  de remover a seção de alimentação.
+
+### 7. Preços dos planos
+- **Situação:** os 3 planos (Mensal, Trimestral, Anual) estão com **valor
+  zerado** e o app mostra "a confirmar".
+- **Precisamos:** os valores reais e as regras (matrícula, fidelidade,
+  cancelamento).
+
+### 8. Contas de teste
+- **Situação:** `master@riseup.test` e `aluno@riseup.test` existem para a
+  apresentação e ficam ativas enquanto `RISEUP_SEMEAR_DEMO=true`.
+- **Antes de produção:** desligar a variável, apagar o volume e criar os
+  acessos reais da direção.
+
+---
+
 ## 🟡 Deixam o site melhor (não bloqueiam)
 
-### 5. Logo em vetor
+### 6. Logo em vetor
 Hoje a marca é **redesenhada em texto + triângulo** (`src/components/ui/Logo.tsx`),
 a partir do letreiro que aparece no vídeo. Funciona, mas não é a marca oficial.
 - **Precisamos:** o arquivo original em `.svg`, `.ai`, `.eps` ou `.pdf`.
@@ -73,7 +114,33 @@ Nenhum profissional é citado (nome, formação, CREF). Uma seção de equipe co
 converter bem em academia.
 - **Precisamos:** nomes, fotos e CREF de quem puder aparecer.
 
-### 10. Avaliações do Google
+### 10. Credenciais do Strava
+Para o aluno conectar corridas e pedaladas, a academia precisa criar um
+aplicativo em <https://www.strava.com/settings/api>:
+- **Authorization Callback Domain:** o domínio do site
+- Devolve `Client ID` e `Client Secret`, que vão nas variáveis
+  `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`
+
+Sem isso, a tela do Strava explica que a integração não está configurada, em
+vez de quebrar. Todo o resto (OAuth, tokens cifrados, renovação automática,
+sincronização) já está pronto.
+
+### 11. Notificações de lembrete de água
+O aluno já programa meta, horários e intervalo dos lembretes, e isso fica
+salvo. **O envio da notificação no celular ainda não está ligado** — depende
+de gerar as chaves VAPID de Web Push e de um agendador. É a próxima etapa
+natural do app.
+
+### 12. Grade real de aulas
+Os 7 horários cadastrados são **demonstração**. A tela avisa isso. Precisamos
+da grade real: modalidade, dia, horário, professor e vagas.
+
+### 13. Cadastro dos alunos
+Hoje existe 1 aluno de demonstração. Para a academia usar de verdade, falta
+decidir como os alunos entram no sistema: cadastro pela recepção, importação
+de planilha, ou autocadastro com aprovação.
+
+### 14. Avaliações do Google
 O site usa hoje **uma** avaliação pública, do FitFit. A academia tem perfil no
 Google Business, cujas avaliações não conseguimos ler automaticamente.
 - **Precisamos:** as avaliações do Google (print ou copiar/colar) para ampliar a
@@ -97,6 +164,7 @@ Todos têm lugar pronto no código.
 | Avaliação física, nutricionista | Sem informação. |
 | Estacionamento, vestiário, armários | Não vistos no vídeo nem citados em fonte. Se existirem, viram diferenciais fortes. |
 | Aula experimental gratuita | Sem informação — se existir, é o melhor CTA possível para o hero. |
+| Pagamento pelo app | Não integrado. Hoje o app **mostra** o histórico; a baixa é registrada pela recepção. Integrar Pix/cartão é decisão comercial (gateway, taxas, contrato). |
 
 ---
 
@@ -111,6 +179,9 @@ Copy escrita para esta proposta, **não** ditada pela academia:
 | Sobre — corpo | Os dois parágrafos sobre o perfil dos alunos e os horários |
 | CTA final | "Pronto para subir o nível?" |
 | Rodapé | "Treine forte. Treine sempre." |
+| Hero | "Mais que uma academia, um estilo de vida." |
+| Hero | Palavras "Disciplina · Resultados · Evolução · Sempre" |
+| Login | "Seu treino no seu bolso." |
 
 ⚠️ **Nenhuma dessas frases é slogan oficial da Rise Up.** Se a academia já tem
 um slogan, ele substitui a frase do hero.

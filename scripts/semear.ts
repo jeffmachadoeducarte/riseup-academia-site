@@ -172,12 +172,18 @@ async function main() {
       lembreteIntervaloMin: 90,
     });
 
+    // A meta é 2960 ml = 12 copos. Alguns dias precisam bater para a
+    // legenda das barras laranja fazer sentido na demonstração.
+    const META_COPOS = 12;
     const linhas = [];
     for (let i = 0; i < 14; i++) {
       const d = dia(i);
-      const copos = 6 + Math.floor(Math.random() * 6);
+      const bateu = i % 3 === 0;
+      const copos = bateu
+        ? META_COPOS + Math.floor(Math.random() * 2)
+        : 7 + Math.floor(Math.random() * 4);
       for (let c = 0; c < copos; c++) {
-        linhas.push({ alunoId: aluno.id, dia: d, ml: 250, em: `${d}T${String(8 + c).padStart(2, '0')}:00:00.000Z` });
+        linhas.push({ alunoId: aluno.id, dia: d, ml: 250, em: `${d}T${String(7 + c).padStart(2, '0')}:00:00.000Z` });
       }
     }
     await db.insert(schema.registrosAgua).values(linhas);

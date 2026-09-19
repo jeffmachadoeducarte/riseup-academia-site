@@ -15,7 +15,7 @@ type Props = {
 };
 
 const campo =
-  'w-full rounded-[2px] border border-ink-600 bg-ink-900 px-3.5 py-3 text-[0.9rem] text-bone-50 transition-colors focus:border-rise-500 focus:outline-none';
+  'w-full rounded-[2px] border border-ink-600 bg-ink-900 px-3 py-3 text-[0.9rem] text-bone-50 transition-colors focus:border-rise-500 focus:outline-none';
 
 export function Programacao(p: Props) {
   const [pendente, iniciar] = useTransition();
@@ -67,7 +67,7 @@ export function Programacao(p: Props) {
         />
       </label>
 
-      <fieldset disabled={!ligado} className="grid grid-cols-3 gap-3 transition-opacity disabled:opacity-40">
+      <fieldset disabled={!ligado} className="grid grid-cols-2 gap-3 transition-opacity disabled:opacity-40 sm:grid-cols-3">
         <label className="block">
           <span className="t-eyebrow block text-bone-500">Das</span>
           <input name="inicio" type="time" defaultValue={p.inicio} className={`mt-2 ${campo}`} />
@@ -76,7 +76,7 @@ export function Programacao(p: Props) {
           <span className="t-eyebrow block text-bone-500">Até</span>
           <input name="fim" type="time" defaultValue={p.fim} className={`mt-2 ${campo}`} />
         </label>
-        <label className="block">
+        <label className="col-span-2 block sm:col-span-1">
           <span className="t-eyebrow block text-bone-500">A cada (min)</span>
           <input name="intervalo" type="number" defaultValue={p.intervalo} min={15} max={480} step={15} className={`mt-2 ${campo}`} />
         </label>

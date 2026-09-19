@@ -1,8 +1,8 @@
 # Rise Up Academia — site institucional
 
-Site de página única para a **Rise Up Academia**, em Navegantes/SC.
-Construído em cima do material real da academia: todo o conteúdo visual vem do
-vídeo institucional que o cliente forneceu.
+Site institucional + **área do aluno (PWA)** + **painel da direção** para a
+**Rise Up Academia**, em Navegantes/SC. Todo o conteúdo visual vem do vídeo
+institucional que o cliente forneceu.
 
 ---
 
@@ -15,10 +15,13 @@ vídeo institucional que o cliente forneceu.
 | Estilo | **Tailwind CSS v4** | Design tokens em CSS, sem arquivo de config JS |
 | Animação | **IntersectionObserver próprio** | Nenhuma biblioteca de animação: ~40 linhas resolvem tudo que o site usa |
 | Ícones | **SVG inline** | Sem pacote de ícones no bundle |
+| Banco | **SQLite + Drizzle** | Um arquivo num volume. O porte da academia não justifica um Postgres separado |
+| Autenticação | **scrypt nativo + sessões em tabela** | Sem dependência externa; senha nunca em texto puro |
 | Mídia | **ffmpeg** (só em build) | Não entra na imagem de produção |
 
-**Dependências de produção: 3** — `next`, `react`, `react-dom`.
-Auditoria de segurança: **0 vulnerabilidades**.
+**Dependências de produção: 6** — `next`, `react`, `react-dom`,
+`better-sqlite3`, `drizzle-orm`, `server-only`, `zod`.
+`npm audit --omit=dev`: **0 vulnerabilidades**.
 
 ---
 
@@ -27,8 +30,17 @@ Auditoria de segurança: **0 vulnerabilidades**.
 ```bash
 npm install
 npm run media     # gera vídeos e imagens a partir do reel original
+npm run migrar    # cria o banco em ./dados/riseup.db
+npm run semear    # dados de demonstração + contas de teste
 npm run dev       # http://localhost:3000
 ```
+
+**Contas de demonstração** (criadas por `npm run semear`):
+
+| Perfil | E-mail | Senha |
+|---|---|---|
+| Direção | `master@riseup.test` | `RiseUp@2026` |
+| Aluno | `aluno@riseup.test` | `Aluno@2026` |
 
 | Script | O que faz |
 |---|---|
@@ -38,6 +50,9 @@ npm run dev       # http://localhost:3000
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript sem emitir |
 | `npm run media` | Regenera toda a mídia (`-- --force` sobrescreve) |
+| `npm run migrar` | Aplica as migrações no banco |
+| `npm run semear` | Cria os dados de demonstração |
+| `npm run exportar-demo` | Gera `drizzle/dados-demo.sql` para o contêiner |
 | `npm run check` | typecheck + lint + build |
 
 ---
@@ -51,16 +66,76 @@ public/assets/          mídia gerada e versionada
   ├── video/            hero (mp4/webm/mobile) + reel completo
   ├── posters/          poster do hero + LQIP
   └── images/           frames da galeria e das modalidades
+dados/                  banco SQLite (fora do Git; volume em produção)
+drizzle/                migrações + dados-demo.sql
+docker/entrada.sh       migração e semeadura no boot do contêiner
 src/
-  ├── config/site.ts    ⭐ TODO o conteúdo do site
-  ├── app/              rotas, layout, SEO, páginas legais
+  ├── config/site.ts    ⭐ TODO o conteúdo do site institucional
+  ├── db/               schema, conexão
+  ├── app/
+  │   ├── (publico)     home, páginas legais, 404
+  │   ├── (aluno)/app   PWA do aluno
+  │   ├── (painel)      painel da direção
+  │   ├── entrar/       login
+  │   └── api/          health, retorno do OAuth do Strava
   ├── components/
   │   ├── sections/     uma seção da home por arquivo
+  │   ├── app/          componentes do PWA
   │   └── ui/           Container, Button, Figura, Logo, Icons, SectionTitle
-  ├── hooks/            useReveal
-  └── lib/              cn, schema.org
+  ├── hooks/            useReveal, usePwa
+  └── lib/              auth, dados-aluno, segredos, strava, schema.org, cn
 docs/                   pesquisa, pendências, deploy, status
 ```
+
+---
+
+## Área do aluno
+
+PWA instalável em `/app`, protegido por sessão.
+
+| Tela | O que faz |
+|---|---|
+| Início | Hidratação do dia, frequência, treino, próxima aula, financeiro |
+| Treino | Treino do perfil, dividido em blocos, com séries e descanso |
+| Dieta | Receitas do perfil, agrupadas por refeição, com macros |
+| Água | Registro rápido, histórico de 7 dias, meta e lembretes |
+| Aulas | Grade semanal começando por hoje |
+| Financeiro | Plano, situação e histórico de parcelas |
+| Perfil | Dados, evolução, Strava, instalação do app, sair |
+
+### O perfil de treino manda em tudo
+
+A direção aponta o perfil do aluno no painel (**Emagrecimento**,
+**Hipertrofia**, **Condicionamento** ou **Saúde**). É essa escolha que decide
+quais treinos e receitas o app mostra. Enquanto o perfil for nulo, o app diz
+que a avaliação está pendente — nunca exibe um treino genérico como se fosse
+prescrição individual.
+
+### Conteúdo sem assinatura é marcado
+
+Treino e dieta são prescrição. Enquanto `assinadoPor` estiver vazio, o app
+exibe um aviso de que aquilo é modelo de demonstração. Ver
+[`pendencias-cliente.md`](./pendencias-cliente.md).
+
+### PWA
+
+- `public/app.webmanifest` com ícones normais e *maskable*, atalhos e escopo `/app`
+- Instruções de instalação **por plataforma**: o iOS não expõe o evento de
+  instalação, então lá o app ensina o caminho do menu Compartilhar
+- **O service worker não guarda nada autenticado em cache.** Só ícones, fontes,
+  imagens e a tela de sem conexão. Num celular emprestado, ninguém encontra a
+  tela do aluno anterior
+
+### Segurança
+
+- Senha em **scrypt**, nunca em texto puro
+- Sessão em tabela, cookie `httpOnly` + `sameSite=lax` + `secure` em produção
+- Freio de 6 tentativas de login por e-mail, com bloqueio de 10 minutos
+- Mensagem de erro única para e-mail inexistente e senha errada — dizer
+  "este e-mail não existe" entregaria quem é aluno da academia
+- Tokens do Strava cifrados com AES-256-GCM (`RISEUP_CHAVE_SEGREDOS`)
+- Trocar a senha derruba as sessões dos outros aparelhos
+- `/app` e `/painel` fora do índice dos buscadores
 
 ---
 
