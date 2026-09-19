@@ -9,12 +9,16 @@ Guia completo para colocar o site no ar. Leva ~10 minutos.
 | Item | Valor |
 |---|---|
 | Tipo de serviço | **App** |
-| Origem | Repositório Git ou upload |
-| Build | **Dockerfile** (na raiz do projeto) |
+| Origem | GitHub — `jeffmachadoeducarte/riseup-academia-site`, branch `main` |
+| Build | **Dockerfile** na raiz, contexto `/` |
 | Porta interna | **3000** |
 | Health check | `GET /api/health` |
-| Comando de start | `node server.js` (já definido no Dockerfile) |
-| Usuário do contêiner | `nextjs` (não-root, uid 1001) |
+| **Volume** | **`/app/dados`** — sem isto o banco some a cada deploy |
+| Usuário do contêiner | `riseup` (não-root) |
+
+> ⚠️ **O volume não é opcional.** A área do aluno usa SQLite num arquivo dentro
+> de `/app/dados`. Um redeploy troca o contêiner; sem volume, alunos, treinos e
+> pagamentos vão junto.
 
 O `Dockerfile` é multi-estágio: a imagem final tem só o runtime Node e o build
 `standalone` do Next — sem toolchain, sem devDependencies, sem os binários de
@@ -78,7 +82,29 @@ npm run build
 NEXT_PUBLIC_SITE_URL=https://SUA-URL.easypanel.host
 NEXT_PUBLIC_MODO_PREVIA=true
 NODE_ENV=production
+DATABASE_URL=/app/dados/riseup.db
+RISEUP_CHAVE_SEGREDOS=<48 bytes aleatórios — veja abaixo>
+RISEUP_SEMEAR_DEMO=true
 ```
+
+Gere a chave com:
+
+```bash
+openssl rand -base64 48
+```
+
+**`RISEUP_CHAVE_SEGREDOS`** cifra os tokens do Strava no banco. Guarde no
+gerenciador de senhas: trocá-la torna ilegível tudo que foi salvo com ela, e os
+alunos precisam reconectar. Não é uma senha de aplicação — é a chave do cofre.
+
+**`RISEUP_SEMEAR_DEMO=true`** cria as contas de teste no primeiro boot, e só se
+o banco estiver vazio. Depois que existir um usuário de verdade, o script nunca
+mais escreve nada.
+
+> 🔐 **A prévia fica com login público.** Com a semeadura ligada, quem tiver a
+> URL consegue entrar como `master@riseup.test` / `RiseUp@2026`. Para mostrar ao
+> cliente tudo bem; antes de virar produção, troque `RISEUP_SEMEAR_DEMO` para
+> `false`, apague o volume e crie os acessos reais.
 
 ### Domínio definitivo
 
@@ -86,6 +112,17 @@ NODE_ENV=production
 NEXT_PUBLIC_SITE_URL=https://riseupacademia.com.br
 NEXT_PUBLIC_MODO_PREVIA=false
 NODE_ENV=production
+DATABASE_URL=/app/dados/riseup.db
+RISEUP_CHAVE_SEGREDOS=<a mesma chave, sempre>
+RISEUP_SEMEAR_DEMO=false
+```
+
+Opcional, quando a academia criar o app em <https://www.strava.com/settings/api>
+(callback: `https://SEU-DOMINIO/api/strava/retorno`):
+
+```env
+STRAVA_CLIENT_ID=
+STRAVA_CLIENT_SECRET=
 ```
 
 > **`NEXT_PUBLIC_MODO_PREVIA=true` tira o site do índice dos buscadores** —
@@ -107,6 +144,16 @@ Se preferir passar o domínio como build arg, o `Dockerfile` também aceita
 
 ---
 
+## 3.5. Volume — sem isto o banco some a cada deploy
+
+Em **Advanced → Volumes**:
+
+| Campo | Valor |
+|---|---|
+| Tipo | Volume |
+| Nome | `riseup-dados` |
+| Mount path | `/app/dados` |
+
 ## 4. Rede e domínio
 
 1. **Deploy → Ports**: porta do contêiner **3000**
@@ -126,7 +173,17 @@ Clique em **Deploy**. O log deve terminar com algo como:
 
 ```
 ✓ Compiled successfully
-✓ Generating static pages (8/8)
+✓ Generating static pages (11/11)
+```
+
+E o boot do contêiner mostra:
+
+```
+[riseup] aplicando migrações...
+[riseup] banco migrado em /app/dados/riseup.db
+[riseup] conferindo dados de demonstração...
+[riseup] dados de demonstração aplicados (2 usuários)
+[riseup] servindo na porta 3000
 ```
 
 E o contêiner sobe com:
@@ -164,6 +221,10 @@ No navegador, confirme:
 - [ ] Os links de WhatsApp e telefone abrem os apps certos
 - [ ] `/politica-de-privacidade` e `/termos-de-uso` abrem
 - [ ] Uma URL inválida cai no 404 do site
+- [ ] `/entrar` abre e o login de aluno leva para `/app`
+- [ ] O login de direção leva para `/painel`
+- [ ] No celular, `/app/instalar` mostra as instruções do seu aparelho
+- [ ] Depois de um redeploy, os dados do aluno continuam lá (volume funcionando)
 - [ ] O canonical aponta para o domínio certo (veja o `<head>`)
 - [ ] **Em prévia:** `curl https://SUA-URL/robots.txt` responde `Disallow: /`
 - [ ] **No definitivo:** o mesmo comando responde `Allow: /` e aponta o sitemap
@@ -195,6 +256,10 @@ ligado, o EasyPanel reconstrói sozinho.
 | Site oficial não entra no Google | `NEXT_PUBLIC_MODO_PREVIA` ainda em `true` | Troque para `false` e **refaça o deploy** |
 | Mapa não carrega | CSP bloqueando o frame | `frame-src` em `next.config.mjs` precisa de `https://www.google.com` |
 | Health check falhando | Porta divergente | Porta do contêiner tem de ser 3000 |
+| Dados somem a cada deploy | Volume ausente | Montar volume em `/app/dados` |
+| `better-sqlite3` falha no build | Imagem Alpine | O Dockerfile usa Debian slim de propósito — não troque |
+| Erro de chave ao abrir Strava | `RISEUP_CHAVE_SEGREDOS` mudou | Volte a chave anterior, ou os alunos reconectam |
+| Contas de teste no ar em produção | `RISEUP_SEMEAR_DEMO=true` | Trocar para `false`, apagar o volume e recriar os acessos |
 | 502 logo após o deploy | Contêiner ainda subindo | O health check tem `start-period` de 20s; aguarde |
 
 ---
