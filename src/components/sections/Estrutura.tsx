@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useProgressoScroll } from '@/hooks/useProgressoScroll';
 import { site } from '@/config/site';
 import { cn } from '@/lib/cn';
 import { Container } from '@/components/ui/Container';
@@ -22,6 +23,17 @@ const itens = estrutura.galeria;
  * Em 4 colunas × 4 linhas as 16 células são preenchidas exatamente, sem
  * buracos no fim do grid.
  */
+/**
+ * As quatro cenas da sequência pinned, na ordem em que aparecem.
+ * `indice` aponta para a imagem em `estrutura.galeria`.
+ */
+const CENAS = [
+  { indice: 0, etiqueta: 'Salão principal', titulo: 'O espaço que sustenta o treino.', texto: 'Área de musculação e funcional dividindo o mesmo salão, com grama sintética e o letreiro da marca ao fundo.' },
+  { indice: 2, etiqueta: 'Cardio', titulo: 'Ritmo em qualquer horário.', texto: 'Esteiras, escada e bikes sob iluminação própria — a área que enche às 6h e às 22h.' },
+  { indice: 3, etiqueta: 'Funcional', titulo: 'Intensidade fora da máquina.', texto: 'Corda naval, assault bike e piso emborrachado para treino intervalado.' },
+  { indice: 4, etiqueta: 'Aulas coletivas', titulo: 'Treinar junto muda o rendimento.', texto: 'Sala espelhada com barras, steps e colchonetes para as turmas.' },
+] as const;
+
 const LAYOUT = [
   'col-span-2 row-span-2 lg:col-span-2 lg:row-span-2', // salão (bloco grande)
   'row-span-2',                                        // cross    (retrato)
@@ -43,6 +55,15 @@ export function Estrutura() {
   const [aberta, setAberta] = useState<number | null>(null);
   const dialogo = useRef<HTMLDialogElement>(null);
   const gatilho = useRef<HTMLButtonElement | null>(null);
+
+  /**
+   * Palco da narrativa. A seção fica alta (400svh) e o conteúdo gruda no
+   * topo com `position: sticky` — rolagem nativa, sem interceptar nada.
+   * No mobile o palco é desligado e vira o grid de sempre: prender a tela
+   * num aparelho pequeno atrapalha mais do que ajuda.
+   */
+  const palco = useRef<HTMLDivElement>(null);
+  useProgressoScroll(palco, { desligarEmMobile: true });
 
   const abrir = useCallback((indice: number, elemento: HTMLButtonElement) => {
     gatilho.current = elemento;
@@ -81,65 +102,135 @@ export function Estrutura() {
   const atual = aberta === null ? null : itens[aberta];
 
   return (
-    <section id="estrutura" className="relative bg-ink-900 py-24 sm:py-32 lg:py-40">
-      <Container size="wide">
-        <SectionTitle
-          indice={estrutura.indice}
-          etiqueta={estrutura.etiqueta}
-          titulo={estrutura.titulo}
-          descricao={estrutura.descricao}
-        />
+    <section id="estrutura" className="relative bg-ink-900">
+      {/* ═════════════════════ palco pinned (desktop) ═════════════════════
+          Quatro cenas se revezam enquanto a área rola por trás. É scroll
+          nativo: dá para subir, descer, usar teclado e sair quando quiser. */}
+      <div ref={palco} className="palco hidden lg:block" style={{ height: '400svh' }}>
+        <div className="palco-tela">
+          {CENAS.map((cena, i) => {
+            const de = i / CENAS.length;
+            const ate = (i + 1) / CENAS.length;
+            const item = itens[cena.indice];
+            return (
+              <div
+                key={cena.indice}
+                data-ultima={i === CENAS.length - 1 ? 'true' : 'false'}
+                style={{ '--de': de, '--ate': ate } as React.CSSProperties}
+                className="camada absolute inset-0"
+              >
+                <Figura
+                  base={item.src}
+                  alt={item.alt}
+                  foco={'foco' in item ? item.foco : undefined}
+                  sizes="100vw"
+                  className="camada-zoom absolute inset-0"
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/45 to-ink-950/65"
+                />
 
-        {/* ── grid assimétrico: 2 colunas no mobile/tablet, 4 no desktop ── */}
-        <div className="mt-14 grid auto-rows-[130px] grid-cols-2 gap-2.5 sm:auto-rows-[160px] sm:gap-3 lg:mt-20 lg:auto-rows-[175px] lg:grid-cols-4">
-          {itens.map((item, i) => (
-            <button
-              key={item.src}
-              type="button"
-              onClick={(e) => abrir(i, e.currentTarget)}
-              aria-label={`Ampliar imagem: ${item.legenda} — ${item.alt}`}
-              className={cn(
-                'reveal group relative overflow-hidden rounded-[2px] bg-ink-850 text-left',
-                'transition-[transform,box-shadow] duration-500 ease-out hover:z-10 hover:shadow-[0_28px_60px_-28px_rgba(0,0,0,0.9)]',
-                LAYOUT[i] ?? 'row-span-2',
-              )}
-              style={{ '--reveal-delay': `${Math.min(i, 6) * 70}ms` } as React.CSSProperties}
-            >
-              <Figura
-                base={item.src}
-                alt={item.alt}
-                foco={'foco' in item ? item.foco : undefined}
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
-                imgClassName="transition-transform duration-[900ms] ease-out group-hover:scale-[1.07]"
-              />
+                <div className="camada-texto absolute inset-x-0 bottom-0">
+                  <Container size="wide" className="pb-24">
+                    <p className="t-eyebrow text-rise-500">{cena.etiqueta}</p>
+                    <h3 className="t-display mt-4 max-w-2xl text-[clamp(2.25rem,5vw,4rem)] text-bone-50">
+                      {cena.titulo}
+                    </h3>
+                    <p className="mt-5 max-w-md text-[0.975rem] leading-relaxed text-bone-200">
+                      {cena.texto}
+                    </p>
+                  </Container>
+                </div>
+              </div>
+            );
+          })}
 
-              {/* Véu escuro constante + reforço no hover, para a legenda ler. */}
-              <span
-                aria-hidden
-                className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/15 to-transparent transition-opacity duration-500 group-hover:from-ink-950/95"
-              />
+          {/* título da seção, fixo por cima das cenas */}
+          <div className="pointer-events-none absolute inset-x-0 top-0">
+            <Container size="wide" className="pt-28">
+              <div className="flex items-center gap-3">
+                <span className="font-display text-[0.6875rem] font-bold tracking-[0.2em] text-bone-400">
+                  {estrutura.indice}
+                </span>
+                <span aria-hidden className="h-px w-6 bg-rise-500" />
+                <span className="t-eyebrow text-rise-500">{estrutura.etiqueta}</span>
+              </div>
+            </Container>
+          </div>
 
-              <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4">
-                <span className="font-display text-[0.8125rem] font-bold uppercase tracking-[0.1em] text-bone-50">
-                  {item.legenda}
+          {/* progresso da sequência */}
+          <div className="absolute inset-x-0 bottom-0">
+            <Container size="wide" className="pb-8">
+              <span aria-hidden className="block h-px w-full bg-ink-700">
+                <span className="barra-progresso block h-px w-full bg-rise-500" />
+              </span>
+            </Container>
+          </div>
+        </div>
+      </div>
+
+      {/* ═════════════ grade completa — pausa depois da sequência ═════════
+          No mobile é a seção inteira; no desktop entra depois do palco, com
+          todas as imagens e o lightbox. */}
+      <div className="py-24 sm:py-32 lg:py-32">
+        <Container size="wide">
+          <SectionTitle
+            indice={estrutura.indice}
+            etiqueta={estrutura.etiqueta}
+            titulo={estrutura.titulo}
+            descricao={estrutura.descricao}
+            className="titulo-sem-palco lg:hidden"
+          />
+          <p className="reveal hidden max-w-xl text-[0.975rem] leading-relaxed text-bone-400 [@media(prefers-reduced-motion:reduce)]:hidden lg:block">
+            {estrutura.descricao}
+          </p>
+
+          <div className="mt-14 grid auto-rows-[130px] grid-cols-2 gap-2.5 sm:auto-rows-[160px] sm:gap-3 lg:mt-12 lg:auto-rows-[175px] lg:grid-cols-4">
+            {itens.map((item, i) => (
+              <button
+                key={item.src}
+                type="button"
+                onClick={(e) => abrir(i, e.currentTarget)}
+                aria-label={`Ampliar imagem: ${item.legenda} — ${item.alt}`}
+                className={cn(
+                  'reveal group relative overflow-hidden rounded-[2px] bg-ink-850 text-left',
+                  'transition-[transform,box-shadow] duration-500 ease-out hover:z-10 hover:shadow-[0_28px_60px_-28px_rgba(0,0,0,0.9)]',
+                  LAYOUT[i] ?? 'row-span-2',
+                )}
+                style={{ '--reveal-delay': `${Math.min(i, 6) * 70}ms` } as React.CSSProperties}
+              >
+                <Figura
+                  base={item.src}
+                  alt={item.alt}
+                  foco={'foco' in item ? item.foco : undefined}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                  imgClassName="transition-transform duration-[900ms] ease-out group-hover:scale-[1.07]"
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/15 to-transparent transition-opacity duration-500 group-hover:from-ink-950/95"
+                />
+                <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4">
+                  <span className="font-display text-[0.8125rem] font-bold uppercase tracking-[0.1em] text-bone-50">
+                    {item.legenda}
+                  </span>
+                  <span
+                    aria-hidden
+                    className="grid h-7 w-7 shrink-0 translate-y-1 place-items-center rounded-full border border-bone-50/30 text-bone-50 opacity-0 transition-all duration-400 group-hover:translate-y-0 group-hover:opacity-100"
+                  >
+                    <IconArrow className="h-3.5 w-3.5 -rotate-45" />
+                  </span>
                 </span>
                 <span
                   aria-hidden
-                  className="grid h-7 w-7 shrink-0 translate-y-1 place-items-center rounded-full border border-bone-50/30 text-bone-50 opacity-0 transition-all duration-400 group-hover:translate-y-0 group-hover:opacity-100"
-                >
-                  <IconArrow className="h-3.5 w-3.5 -rotate-45" />
-                </span>
-              </span>
-
-              {/* Fio laranja que cresce na borda inferior no hover. */}
-              <span
-                aria-hidden
-                className="absolute bottom-0 left-0 h-[2px] w-0 bg-rise-500 transition-all duration-500 ease-out group-hover:w-full"
-              />
-            </button>
-          ))}
-        </div>
-      </Container>
+                  className="absolute bottom-0 left-0 h-[2px] w-0 bg-rise-500 transition-all duration-500 ease-out group-hover:w-full"
+                />
+              </button>
+            ))}
+          </div>
+        </Container>
+      </div>
 
       {/* ═══════════════════════════════════════════════════ lightbox */}
       <dialog

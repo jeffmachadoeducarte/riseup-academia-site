@@ -85,6 +85,99 @@ RISEUP_CHAVE_SEGREDOS=k9lE2OouUxJle5QdZZWMmT9lhtnOG3fDNsrkztuAk+ZYaJyEVOOxtlhx2U
 - [x] Docker
 - [ ] Deploy — **bloqueado**: sem acesso ao servidor e sem domínio definido
 
+## Arquitetura de animação — scroll-driven storytelling
+
+Implantado em 19/09/2026 (sessão 3).
+
+### Biblioteca adicionada: nenhuma
+
+GSAP + ScrollTrigger pesa ~70 KB só para o que aqui cabe em dois hooks e um
+punhado de regras CSS. A narrativa inteira roda com `position: sticky`
+(rolagem nativa), `IntersectionObserver` e uma variável CSS de progresso.
+Dependências de produção seguem em 6.
+
+### Como funciona
+
+Cada seção longa recebe `--p` (0 → 1) conforme o scroll a percorre, escrito
+por `useProgressoScroll`. Quem anima é o CSS, lendo `--p` em `transform` e
+`opacity` — as duas propriedades que a GPU resolve sem recalcular layout.
+
+O JavaScript não escuta evento de scroll. Um `IntersectionObserver` liga e
+desliga um laço de `requestAnimationFrame` que só roda enquanto a seção está
+na tela, e grava a variável no máximo uma vez por quadro, com duas casas
+decimais.
+
+> Decisão registrada: o Chrome já suporta `animation-timeline` nativo, o
+> Safari e o Firefox não. Optamos por usar o mesmo laço em todos: manter duas
+> mecânicas diferentes custa mais em manutenção e depuração do que os
+> microssegundos economizados. (Essa escolha corrigiu um bug real — o hook
+> desistia no Chrome esperando um caminho nativo que ainda não existia, e
+> nada animava.)
+
+### Ritmo da página
+
+| Seção | Mecânica |
+|---|---|
+| Hero | Saída cinematográfica: texto sobe e some, vídeo ganha 12% de escala |
+| Sobre | **Pausa editorial** — só reveals de entrada |
+| Faixa da marca | Movimento contínuo, sem scroll |
+| Estrutura | **Pinned**, 400svh, 4 cenas em tela cheia + grade completa depois |
+| Treinos | Grade normal, reveals escalonados |
+| Diferenciais | **Pausa** — lista com reveals |
+| Experiência | **Pinned**, 260svh, moldura abre de 62vw para 92vw |
+| Prova social | **Pausa** — faixa de avaliações, pausa no hover |
+| Instagram | Grade com hover |
+| Localização | Funcional, animação mínima |
+| CTA final | Entrada em escala |
+
+Seções pinned: **2**. O resto é scroll natural. A alternância é proposital —
+tudo pinned viraria template de efeito.
+
+### Comportamento do vídeo
+
+- Toca quando entra na tela, pausa quando sai (`IntersectionObserver`, 40%
+  de limiar). Vídeo rodando escondido gasta CPU e bateria à toa.
+- **Áudio:** tenta tocar com som; se o navegador barrar — e todos barram sem
+  gesto do usuário — cai para mudo e mostra um botão laranja "Ativar som". O
+  clique é justamente o gesto que faltava. Não há tentativa de contornar a
+  política de autoplay.
+- A escolha de áudio do visitante é guardada e respeitada quando ele volta.
+- O controle fica no topo direito do quadro: o botão flutuante do WhatsApp
+  mora no canto inferior direito e os dois colidiam.
+
+### Mobile
+
+Os dois palcos são **desligados** abaixo de 768px. Prender a tela num
+aparelho pequeno rende pouco e atrapalha muito. A Estrutura vira a grade
+completa; a Experiência vira uma composição vertical com o mesmo vídeo e o
+mesmo comportamento de áudio.
+
+### Movimento reduzido
+
+Com `prefers-reduced-motion: reduce`:
+- os palcos somem (`display: none`) e as versões normais assumem — nenhuma
+  imagem ou texto se perde;
+- o título da Estrutura, normalmente escondido no desktop, reaparece;
+- o vídeo não toca sozinho e ganha **controles nativos**, senão o visitante
+  ficaria sem como dar play;
+- a faixa de avaliações para.
+
+Verificado: página cai de 15.615px para 9.908px, e as 12 imagens da Estrutura
+continuam presentes nos dois modos.
+
+### Performance medida
+
+Rolando a página inteira em 1440×900: **61 FPS**, 1 tarefa longa (53 ms, o
+início da decodificação do vídeo), **CLS 0**.
+
+### Onde o scroll é interceptado
+
+Em lugar nenhum. Não há scroll hijacking, nem substituição do comportamento
+da roda ou do touch. Tudo é `position: sticky` — o visitante sobe, desce, usa
+Page Up/Down, teclado e links normalmente.
+
+---
+
 ## O que foi feito
 
 Site institucional de página única em Next.js 16 + TypeScript + Tailwind v4,

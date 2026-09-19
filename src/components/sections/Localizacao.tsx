@@ -60,36 +60,27 @@ export function Localizacao() {
                   >
                     {contato.telefone.exibicao}
                   </a>
-                  <a
-                    href={contato.whatsappHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 py-1.5 text-[0.875rem] text-bone-400 underline-offset-4 transition-colors hover:text-rise-400 hover:underline"
-                  >
-                    <IconWhatsApp className="h-3.5 w-3.5" />
-                    {contato.whatsapp.exibicao} · WhatsApp
-                  </a>
                 </Bloco>
               </div>
 
               <div className="flex flex-col gap-2.5 sm:flex-row">
                 <a
-                  href={endereco.rotaLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group inline-flex flex-1 items-center justify-center gap-2.5 rounded-[2px] bg-rise-500 px-6 py-4 font-display text-[0.75rem] font-bold uppercase tracking-[0.14em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-rise-400"
-                >
-                  Como chegar
-                  <IconArrow className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </a>
-                <a
                   href={contato.whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex flex-1 items-center justify-center gap-2.5 rounded-[2px] border border-ink-600 px-6 py-4 font-display text-[0.75rem] font-bold uppercase tracking-[0.14em] text-bone-50 transition-all duration-300 hover:-translate-y-0.5 hover:border-bone-400"
+                  className="inline-flex flex-1 items-center justify-center gap-2.5 rounded-[2px] bg-rise-500 px-6 py-4 font-display text-[0.75rem] font-bold uppercase tracking-[0.14em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-rise-400"
                 >
                   <IconWhatsApp className="h-4 w-4" />
                   WhatsApp
+                </a>
+                <a
+                  href={endereco.rotaLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex flex-1 items-center justify-center gap-2.5 rounded-[2px] border border-ink-600 px-6 py-4 font-display text-[0.75rem] font-bold uppercase tracking-[0.14em] text-bone-50 transition-all duration-300 hover:-translate-y-0.5 hover:border-bone-400"
+                >
+                  Como chegar
+                  <IconArrow className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </a>
               </div>
             </div>

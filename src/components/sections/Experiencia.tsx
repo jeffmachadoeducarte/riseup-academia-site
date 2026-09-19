@@ -1,154 +1,153 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { site } from '@/config/site';
 import { cn } from '@/lib/cn';
 import { Container } from '@/components/ui/Container';
-import { Figura } from '@/components/ui/Figura';
-import { IconPlay } from '@/components/ui/Icons';
 import { Triangulo } from '@/components/ui/Logo';
+import { IconSom, IconSomMudo } from '@/components/ui/Icons';
+import { useProgressoScroll } from '@/hooks/useProgressoScroll';
+import { useVideoNaTela } from '@/hooks/useVideoNaTela';
 
 const { experiencia, marca } = site;
 
 /**
- * Segunda aparição do vídeo — composição editorial, não repete o hero.
+ * Vídeo com som automático e botão de fallback.
  *
- * Aqui o reel roda inteiro, com áudio e controles, e só é baixado quando o
- * visitante aperta play (`preload="none"`). O poster carrega em lazy.
+ * Existe como componente próprio porque a seção o renderiza duas vezes — uma
+ * no palco do desktop, outra na composição do mobile. Cada instância precisa
+ * do seu próprio `ref` e do seu próprio observador; um `ref` compartilhado
+ * entre duas tags seria sobrescrito pela última a montar.
+ *
+ * A instância escondida por `display:none` nunca dispara o
+ * IntersectionObserver, então só a visível toca.
  */
-export function Experiencia() {
+function VideoExperiencia({ className }: { className?: string }) {
   const video = useRef<HTMLVideoElement>(null);
-  const [iniciado, setIniciado] = useState(false);
-
-  function reproduzir() {
-    const el = video.current;
-    if (!el) return;
-    setIniciado(true);
-    el.play().catch(() => undefined);
-  }
+  const { mudo, somBloqueado, alternarSom, semMovimento } = useVideoNaTela(video, { limiar: 0.4 });
 
   return (
-    <section
-      id="experiencia"
-      className="relative overflow-hidden bg-ink-950 py-24 sm:py-32 lg:py-40"
-    >
-      <Container size="wide">
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          {/* ------------------------------------------------- texto */}
-          <div className="lg:col-span-5">
-            <div className="reveal flex items-center gap-3">
-              <span className="font-display text-[0.6875rem] font-bold tracking-[0.2em] text-bone-500">
-                {experiencia.indice}
-              </span>
-              <span aria-hidden className="h-px w-6 bg-rise-500" />
-              <span className="t-eyebrow text-rise-500">{experiencia.etiqueta}</span>
-            </div>
+    <>
+      <video
+        ref={video}
+        src={experiencia.video.src}
+        poster={`${experiencia.video.capa}-720.jpg`}
+        preload="metadata"
+        playsInline
+        loop
+        muted
+        controls={semMovimento}
+        controlsList="nodownload"
+        aria-label={`Vídeo institucional da ${marca.nome}`}
+        className={cn('h-full w-full object-cover', className)}
+        style={{ objectPosition: experiencia.video.foco }}
+      />
 
-            <h2 className="reveal t-display mt-6 text-[clamp(2.25rem,6vw,4rem)] text-bone-50">
-              {experiencia.titulo}
-            </h2>
+      {/* Com controles nativos à mostra, este botão seria redundante. */}
+      {!semMovimento && (
+      <button
+        type="button"
+        onClick={alternarSom}
+        aria-label={mudo ? 'Ativar som do vídeo' : 'Desativar som do vídeo'}
+        className={cn(
+          'absolute right-5 top-5 z-10 inline-flex items-center gap-2.5 rounded-full border px-4 py-2.5',
+          'text-[0.65rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-colors',
+          // Quando o navegador barra o som, o botão ganha destaque — é ele
+          // que devolve ao visitante o áudio que o autoplay não pôde dar.
+          somBloqueado
+            ? 'border-rise-500 bg-rise-500/90 text-white hover:bg-rise-400'
+            : 'border-bone-50/25 bg-ink-950/60 text-bone-200 hover:border-bone-50/60 hover:text-bone-50',
+        )}
+      >
+        {mudo ? <IconSomMudo className="h-3.5 w-3.5" /> : <IconSom className="h-3.5 w-3.5" />}
+        {mudo ? 'Ativar som' : 'Som ligado'}
+      </button>
+      )}
+    </>
+  );
+}
 
-            <p
-              className="reveal mt-6 max-w-md text-[0.975rem] leading-[1.75] text-bone-200"
-              style={{ '--reveal-delay': '90ms' } as React.CSSProperties}
-            >
-              {experiencia.texto}
-            </p>
+/**
+ * EXPERIÊNCIA — o grande momento cinematográfico da página.
+ *
+ * Sequência no desktop:
+ *   0%   vídeo enquadrado na composição, texto presente
+ *   50%  a moldura abre, o vídeo cresce
+ *   100% vídeo no tamanho máximo, texto já saiu
+ *
+ * A seção é alta e o conteúdo gruda com `position: sticky` — rolagem nativa.
+ * O visitante sobe, desce, usa teclado e sai quando quiser; nada intercepta
+ * a roda do mouse.
+ *
+ * No mobile o palco é desligado: prender a tela num aparelho pequeno rende
+ * pouco e atrapalha muito. Lá a seção é uma composição normal, com o mesmo
+ * vídeo e o mesmo comportamento de áudio.
+ */
+export function Experiencia() {
+  const palco = useRef<HTMLDivElement>(null);
+  useProgressoScroll(palco, { desligarEmMobile: true });
 
-            <ul
-              className="reveal mt-10 space-y-3.5 border-t border-ink-700 pt-8"
-              style={{ '--reveal-delay': '160ms' } as React.CSSProperties}
-            >
-              {site.treinos.itens.map((t) => (
-                <li key={t.nome} className="flex items-center gap-3 text-sm text-bone-400">
-                  <Triangulo className="h-2 w-2 shrink-0 text-rise-500" />
-                  {t.nome}
-                </li>
-              ))}
-            </ul>
-          </div>
+  return (
+    <section id="experiencia" className="relative bg-ink-950">
+      {/* ═══════════════════════ palco pinned (desktop) ═══════════════════ */}
+      <div ref={palco} className="palco hidden lg:block" style={{ height: '260svh' }}>
+        <div className="palco-tela grid place-items-center">
+          <div className="exp-moldura relative overflow-hidden rounded-[3px] bg-ink-850">
+            <VideoExperiencia />
 
-          {/* ------------------------------------------------- vídeo */}
-          <div className="reveal lg:col-span-7">
-            <div className="relative mx-auto max-w-md lg:max-w-none">
-              {/* moldura deslocada — dá profundidade sem sombra pesada */}
-              <div
-                aria-hidden
-                className="absolute -inset-3 -z-10 border border-ink-700/70 sm:-inset-5"
-              />
-              <div
-                aria-hidden
-                className="absolute -right-6 -top-6 -z-10 h-32 w-32 bg-[radial-gradient(circle,rgba(240,74,37,0.22),transparent_70%)] blur-xl"
-              />
+            <span
+              aria-hidden
+              className="exp-veu pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/25 to-ink-950/45"
+            />
 
-              <div className="relative aspect-[9/16] overflow-hidden rounded-[2px] bg-ink-850 sm:aspect-[4/5] lg:aspect-[16/11]">
-                {/* Sem `poster`: o atributo baixa a imagem no carregamento da
-                    página, mesmo com a seção longe da primeira dobra. A capa é
-                    uma <img lazy> por cima, que sai quando o vídeo começa. */}
-                <video
-                  ref={video}
-                  src={experiencia.video.src}
-                  preload="none"
-                  playsInline
-                  controls={iniciado}
-                  controlsList="nodownload"
-                  onEnded={() => setIniciado(false)}
-                  aria-label={`Vídeo institucional da ${marca.nome}`}
-                  style={{ objectPosition: experiencia.video.foco }}
-                  className="h-full w-full object-cover"
-                />
-
-                {/* Capa com botão de play — some quando o vídeo começa. */}
-                <div
-                  className={cn(
-                    'absolute inset-0 transition-opacity duration-500',
-                    iniciado ? 'pointer-events-none opacity-0' : 'opacity-100',
-                  )}
-                >
-                  <Figura
-                    base={experiencia.video.capa}
-                    alt={experiencia.video.capaAlt}
-                    foco={experiencia.video.foco}
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    className="absolute inset-0"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/30 to-ink-950/20"
-                  />
-                  <button
-                    type="button"
-                    onClick={reproduzir}
-                    aria-label={`Reproduzir vídeo institucional da ${marca.nome} (${experiencia.video.duracao})`}
-                    className="group absolute inset-0 grid place-items-center"
-                  >
-                    <span className="relative grid h-20 w-20 place-items-center rounded-full border border-bone-50/30 bg-ink-950/50 backdrop-blur-sm transition-all duration-400 group-hover:scale-105 group-hover:border-rise-500 group-hover:bg-rise-500 sm:h-24 sm:w-24">
-                      <IconPlay className="h-6 w-6 translate-x-0.5 text-bone-50 sm:h-7 sm:w-7" />
-                      <span
-                        aria-hidden
-                        className="absolute inset-0 -z-10 rounded-full border border-rise-500/40 transition-transform duration-700 group-hover:scale-125 group-hover:opacity-0"
-                      />
-                    </span>
-                  </button>
-
-                  <span className="pointer-events-none absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4">
-                    <span className="font-display text-[0.7rem] font-bold uppercase tracking-[0.16em] text-bone-200">
-                      Assistir
-                    </span>
-                    <span className="rounded-full border border-bone-50/20 bg-ink-950/60 px-3 py-1 text-[0.65rem] tracking-wider text-bone-200 backdrop-blur-sm">
-                      {experiencia.video.duracao}
-                    </span>
-                  </span>
-                </div>
+            {/* Texto sobre o vídeo — sai conforme o vídeo toma a tela. */}
+            <div className="exp-texto pointer-events-none absolute inset-x-0 top-0">
+              <div className="px-10 pt-10">
+                <p className="t-eyebrow flex items-center gap-3 text-rise-500">
+                  <Triangulo className="h-2.5 w-2.5" />
+                  {experiencia.etiqueta}
+                </p>
+                <h2 className="t-display mt-5 max-w-xl text-[clamp(2rem,4vw,3.5rem)] text-bone-50">
+                  {experiencia.titulo}
+                </h2>
+                <p className="mt-4 max-w-md text-[0.95rem] leading-relaxed text-bone-200">
+                  {experiencia.texto}
+                </p>
               </div>
-
-              <p className="mt-4 text-[0.7rem] tracking-wide text-bone-500">
-                {experiencia.legenda}
-              </p>
             </div>
+
+            <p className="pointer-events-none absolute bottom-6 left-10 max-w-xs text-[0.7rem] leading-relaxed text-bone-400">
+              {experiencia.legenda}
+            </p>
           </div>
         </div>
-      </Container>
+      </div>
+
+      {/* ═════════════════════════ versão mobile ═════════════════════════ */}
+      <div className="py-24 sm:py-28 lg:hidden">
+        <Container size="wide">
+          <p className="reveal t-eyebrow flex items-center gap-3 text-rise-500">
+            <Triangulo className="h-2.5 w-2.5" />
+            {experiencia.etiqueta}
+          </p>
+          <h2 className="reveal t-display mt-5 text-[clamp(2rem,7vw,2.75rem)] text-bone-50">
+            {experiencia.titulo}
+          </h2>
+          <p className="reveal mt-4 max-w-md text-[0.95rem] leading-relaxed text-bone-200">
+            {experiencia.texto}
+          </p>
+
+          <div className="reveal relative mt-8 aspect-[9/16] overflow-hidden rounded-[3px] bg-ink-850 sm:aspect-[4/5]">
+            <VideoExperiencia />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/70 to-transparent"
+            />
+          </div>
+
+          <p className="reveal mt-4 text-[0.7rem] text-bone-500">{experiencia.legenda}</p>
+        </Container>
+      </div>
     </section>
   );
 }

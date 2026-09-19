@@ -246,3 +246,21 @@ export function IconLuva({ className }: Props) {
     </svg>
   );
 }
+
+export function IconSom({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} {...traco}>
+      <path d="M11 5.2 6.6 8.8H3.4v6.4h3.2L11 18.8Z" />
+      <path d="M15.4 9.2a4 4 0 0 1 0 5.6M18.2 6.4a8 8 0 0 1 0 11.2" />
+    </svg>
+  );
+}
+
+export function IconSomMudo({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} {...traco}>
+      <path d="M11 5.2 6.6 8.8H3.4v6.4h3.2L11 18.8Z" />
+      <path d="m16 9.6 4.6 4.8M20.6 9.6 16 14.4" />
+    </svg>
+  );
+}

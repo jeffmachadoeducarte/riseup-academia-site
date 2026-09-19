@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useProgressoScroll } from '@/hooks/useProgressoScroll';
 import { site, resolverHref } from '@/config/site';
 import { cn } from '@/lib/cn';
 import { Container } from '@/components/ui/Container';
@@ -37,7 +38,12 @@ const { hero } = site;
  * qualidade da conexão.
  */
 export function Hero() {
+  const secao = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+
+  // Progresso de saída: 0 com o hero parado, 1 quando terminou de subir.
+  // Alimenta as classes `hero-*` do CSS. Nada aqui prende a rolagem.
+  useProgressoScroll(secao, { modo: 'saida' });
   const [tocando, setTocando] = useState(false);
   const [pronto, setPronto] = useState(false);
 
@@ -91,6 +97,7 @@ export function Hero() {
 
   return (
     <section
+      ref={secao}
       id="inicio"
       aria-label="Apresentação da Rise Up Academia"
       className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-ink-950 pb-14 pt-28 [@media(max-height:700px)]:pt-24 sm:pb-16 sm:pt-32 lg:justify-center lg:pb-32"
@@ -101,9 +108,9 @@ export function Hero() {
         className={cn(
           'absolute inset-0 -z-10',
           // Desktop: painel vertical à direita, dissolvido na borda esquerda.
-          'lg:left-auto lg:right-0 lg:w-[48%]',
-          'lg:[mask-image:linear-gradient(to_right,transparent_0%,#000_26%,#000_100%)]',
-          'lg:[-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_26%,#000_100%)]',
+          'lg:left-auto lg:right-0 lg:w-[52%]',
+          'lg:[mask-image:linear-gradient(to_right,transparent_0%,#000_20%,#000_100%)]',
+          'lg:[-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_20%,#000_100%)]',
         )}
       >
         <video
@@ -116,7 +123,7 @@ export function Hero() {
           disablePictureInPicture
           tabIndex={-1}
           aria-hidden="true"
-          className="h-full w-full object-cover object-center"
+          className="hero-video-zoom h-full w-full object-cover object-center"
         />
       </div>
 
@@ -124,22 +131,22 @@ export function Hero() {
       {/* Escurece o vídeo o bastante para o texto passar em contraste AA. */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-950 via-ink-950/70 to-ink-950/30 lg:bg-gradient-to-r lg:from-ink-950 lg:via-ink-950/85 lg:to-ink-950/10"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-950 via-ink-950/55 to-ink-950/15 lg:bg-gradient-to-r lg:from-ink-950 lg:via-ink-950/70 lg:to-transparent"
       />
       {/* Vinheta lateral — fecha a composição como em cinema. */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(7,7,9,0.85)_100%)]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(7,7,9,0.7)_100%)]"
       />
       {/* Brilho quente da marca, saindo de baixo. */}
       <div
         aria-hidden
         className="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-[radial-gradient(ellipse_80%_60%_at_20%_100%,rgba(240,74,37,0.16),transparent_70%)]"
       />
-      <div aria-hidden className="grain absolute inset-0 -z-10" />
+      <div aria-hidden className="grain absolute inset-0 -z-10 opacity-60" />
 
       {/* ═══════════════════════════════════════════════════ conteúdo */}
-      <Container size="wide">
+      <Container size="wide" className="hero-saida">
         <div className="max-w-2xl lg:max-w-[43rem]">
           <p className="reveal t-eyebrow flex items-center gap-3 text-bone-200" data-visible="true">
             <Triangulo className="h-2.5 w-2.5 text-rise-500" />
@@ -283,8 +290,8 @@ export function Hero() {
       </Container>
 
       {/* ══════════════════════════════ rodapé do hero ═══════════════════ */}
-      <Container size="wide" className="relative mt-9 sm:mt-12 lg:absolute lg:inset-x-0 lg:bottom-10 lg:mt-0">
-        <div className="flex items-end justify-between gap-8">
+      <Container size="wide" className="hero-saida relative mt-9 sm:mt-12 lg:absolute lg:inset-x-0 lg:bottom-10 lg:mt-0">
+        <div className="flex items-end gap-8">
           {/* indicador de rolagem */}
           <a
             href="#sobre"
@@ -305,23 +312,6 @@ export function Hero() {
             />
           </a>
 
-          {/* palavras da marca, empilhadas */}
-          <ul
-            aria-hidden
-            className="reveal hidden shrink-0 text-right lg:block"
-            style={{ '--reveal-delay': '580ms' } as React.CSSProperties}
-            data-visible="true"
-          >
-            {hero.mantra.map((palavra) => (
-              <li
-                key={palavra}
-                className="text-[0.62rem] font-semibold uppercase leading-[1.7] tracking-[0.24em] text-bone-500"
-              >
-                {palavra}
-              </li>
-            ))}
-            <li className="mt-2 ml-auto h-px w-10 bg-rise-500" />
-          </ul>
         </div>
       </Container>
 

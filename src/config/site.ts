@@ -113,16 +113,18 @@ export const site = {
   /* -------------------------------------------------------- horários
      ✅ Confirmado pela placa da fachada, visível no reel oficial (t≈0,2s). */
   horarios: {
-    fonte: 'Placa de horários na fachada da academia',
+    fonte: 'Informado pela academia (setembro/2026)',
     lista: [
       { dias: 'Segunda a sexta', horas: '6h às 23h', aberto: true },
-      { dias: 'Sábado', horas: '9h às 15h', aberto: true },
+      { dias: 'Sábado', horas: '8h–12h · 14h–18h', aberto: true },
       { dias: 'Domingo', horas: 'Fechado', aberto: false },
     ],
     /** Formato schema.org — usado no JSON-LD de SEO local. */
     schema: [
       { dias: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], abre: '06:00', fecha: '23:00' },
-      { dias: ['Saturday'], abre: '09:00', fecha: '15:00' },
+      // Sábado tem intervalo: o schema.org pede duas faixas separadas.
+      { dias: ['Saturday'], abre: '08:00', fecha: '12:00' },
+      { dias: ['Saturday'], abre: '14:00', fecha: '18:00' },
     ],
   },
 
@@ -164,8 +166,6 @@ export const site = {
     /** Rótulo do indicador de rolagem, no rodapé do hero. */
     rolar: 'Conheça a Rise Up',
 
-    /** Palavras verticais na lateral direita do hero. */
-    mantra: ['Disciplina', 'Resultados', 'Evolução', 'Sempre'],
     ctaPrimario: { rotulo: 'Quero subir o nível', href: 'whatsapp' as const },
     ctaSecundario: { rotulo: 'Já sou aluno', href: '/entrar' },
     /** Métricas exibidas sob o hero — apenas dados verificáveis. */
@@ -192,10 +192,11 @@ export const site = {
       'A Rise Up abriu as portas no São Domingos em 2014 e desde então virou ' +
         'ponto de encontro de quem leva o treino a sério — e de quem está ' +
         'começando agora.',
-      'Aqui não existe um único perfil de aluno. Tem quem venha às 6h antes do ' +
-        'trabalho, quem treine às 22h depois do turno, quem levante peso, quem ' +
-        'bata no saco, quem faça aula coletiva. A estrutura foi montada para ' +
-        'atender todo mundo no mesmo espaço.',
+      'Cada pessoa tem um ritmo. Cada treino, um propósito. Tem quem comece o ' +
+        'dia às 6h, quem termine o turno e treine às 22h, quem busque força na ' +
+        'musculação, intensidade no boxe ou energia nas aulas coletivas.',
+      'Na Rise Up, diferentes rotinas encontram uma estrutura feita para ' +
+        'acompanhar cada uma delas.',
     ],
     destaque: {
       valor: '2014',
@@ -325,16 +326,24 @@ export const site = {
       url: 'https://br.fitfit.fitness/pt/i/8765-rise-up-academia/',
       aviso: 'Nota pública agregada em setembro de 2026, com base em 5 avaliações.',
     },
-    /** Reproduzido literalmente. Nenhum depoimento foi criado. */
+    /**
+     * As cinco avaliações públicas do perfil no FitFit, reproduzidas na
+     * íntegra. O prefixo "Experiência fantástica:" que aparece na origem é
+     * rótulo da própria plataforma para nota 5, não texto do autor — por isso
+     * não entra aqui. Nenhum depoimento foi criado, reescrito ou reatribuído.
+     */
     depoimentos: [
       {
-        texto:
-          'Experiência fantástica: Atendimento impecável. Aparelhos de última ' +
-          'geração. Local com várias modalidades.',
+        texto: 'Atendimento impecável. Aparelhos de última geração. Local com várias modalidades e fácil acesso.',
         autor: 'Rosineide Aparecida',
-        fonte: 'Avaliação pública no FitFit',
-        url: 'https://br.fitfit.fitness/pt/i/8765-rise-up-academia/',
       },
+      {
+        texto: 'Gostei, estou treinando alguns dias e já estou gostando bastante. Atendimento top, diferenciado.',
+        autor: 'Leonardo Adelino',
+      },
+      { texto: 'Perfeito. Tudo de bom.', autor: 'Joao Evangelista Chagas Santos Neto' },
+      { texto: 'Ótimo lugar.', autor: 'Yago Penha' },
+      { texto: 'Ótimo, amei.', autor: 'Cristiane Lima' },
     ],
     rodape:
       'Exibimos apenas avaliações públicas reais, com autoria e fonte. ' +
@@ -367,10 +376,6 @@ export const site = {
   /* -------------------------------------------------------- CTA final */
   ctaFinal: {
     titulo: ['Pronto para', 'subir o nível?'],
-    texto:
-      'Passe na recepção para conhecer a estrutura ou chame no WhatsApp — ' +
-      'a equipe responde com os planos e horários atualizados.',
-    primario: { rotulo: 'Quero conhecer a Rise Up', href: '#localizacao' },
   },
 
   /* ------------------------------------------------------------ footer */
