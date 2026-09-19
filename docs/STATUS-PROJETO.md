@@ -121,10 +121,10 @@ decimais.
 | Hero | Saída cinematográfica: texto sobe e some, vídeo ganha 12% de escala |
 | Sobre | **Pausa editorial** — só reveals de entrada |
 | Faixa da marca | Movimento contínuo, sem scroll |
-| Estrutura | **Pinned**, 400svh, 4 cenas em tela cheia + grade completa depois |
+| Estrutura | **Pinned**, 320svh, galeria que viaja na horizontal |
 | Treinos | Grade normal, reveals escalonados |
 | Diferenciais | **Pausa** — lista com reveals |
-| Experiência | **Pinned**, 260svh, moldura abre de 62vw para 92vw |
+| Experiência | **Pinned**, 240svh, quadro vertical cresce sobre fundo desfocado |
 | Prova social | **Pausa** — faixa de avaliações, pausa no hover |
 | Instagram | Grade com hover |
 | Localização | Funcional, animação mínima |
@@ -132,6 +132,24 @@ decimais.
 
 Seções pinned: **2**. O resto é scroll natural. A alternância é proposital —
 tudo pinned viraria template de efeito.
+
+### Refeito em 19/09/2026 (sessão 4)
+
+A primeira versão espalhava as imagens em **tela cheia**. Como o material vem
+de um vídeo 720×1280, num monitor de 1440px ele era ampliado 2× e ficava
+visivelmente mole — o efeito chamava atenção para o próprio defeito. Refeito:
+
+- **Estrutura** virou uma galeria que viaja na horizontal. As imagens ficam em
+  retrato, perto do tamanho nativo, onde são nítidas; o scroll vertical as
+  empurra para o lado. A proporção vertical do material passou a ser vantagem:
+  cabem várias lado a lado. O deslocamento é medido do DOM com `ResizeObserver`,
+  não chutado — senão sobraria espaço ou cortaria a última imagem.
+- **Experiência** deixou de esticar o vídeo até 92vw. Agora o quadro cresce em
+  altura mantendo a proporção 9:13, limitado a 560px, e quem preenche a tela é
+  um fundo com a mesma cena desfocada (34px de blur). Borrado, a ampliação não
+  aparece; o quadro nítido ganha destaque.
+- No mobile o trilho vira rolagem horizontal por toque — o gesto que a pessoa
+  já espera ali.
 
 ### Comportamento do vídeo
 

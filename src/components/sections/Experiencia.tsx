@@ -90,36 +90,48 @@ export function Experiencia() {
   return (
     <section id="experiencia" className="relative bg-ink-950">
       {/* ═══════════════════════ palco pinned (desktop) ═══════════════════ */}
-      <div ref={palco} className="palco hidden lg:block" style={{ height: '260svh' }}>
-        <div className="palco-tela grid place-items-center">
-          <div className="exp-moldura relative overflow-hidden rounded-[3px] bg-ink-850">
-            <VideoExperiencia />
+      <div ref={palco} className="palco hidden lg:block" style={{ height: '240svh' }}>
+        <div className="palco-tela relative grid place-items-center">
+          {/* Fundo ambiente: a mesma cena, desfocada e ampliada. Como está
+              borrada, a ampliação não aparece — e é ela que dá a sensação de
+              tela cheia sem esticar o vídeo nítido. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${experiencia.video.capa}-720.jpg`}
+            alt=""
+            aria-hidden
+            className="exp-ambiente pointer-events-none absolute inset-0 h-full w-full object-cover"
+          />
+          <span aria-hidden className="pointer-events-none absolute inset-0 bg-ink-950/55" />
 
-            <span
-              aria-hidden
-              className="exp-veu pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/25 to-ink-950/45"
-            />
-
-            {/* Texto sobre o vídeo — sai conforme o vídeo toma a tela. */}
-            <div className="exp-texto pointer-events-none absolute inset-x-0 top-0">
-              <div className="px-10 pt-10">
-                <p className="t-eyebrow flex items-center gap-3 text-rise-500">
-                  <Triangulo className="h-2.5 w-2.5" />
-                  {experiencia.etiqueta}
-                </p>
-                <h2 className="t-display mt-5 max-w-xl text-[clamp(2rem,4vw,3.5rem)] text-bone-50">
-                  {experiencia.titulo}
-                </h2>
-                <p className="mt-4 max-w-md text-[0.95rem] leading-relaxed text-bone-200">
-                  {experiencia.texto}
-                </p>
-              </div>
+          {/* Texto à esquerda; o quadro de vídeo à direita. */}
+          <Container size="wide" className="relative grid w-full grid-cols-12 items-center gap-10">
+            <div className="exp-texto col-span-5">
+              <p className="t-eyebrow flex items-center gap-3 text-rise-500">
+                <Triangulo className="h-2.5 w-2.5" />
+                {experiencia.etiqueta}
+              </p>
+              <h2 className="t-display mt-5 text-[clamp(2rem,4vw,3.5rem)] text-bone-50">
+                {experiencia.titulo}
+              </h2>
+              <p className="mt-5 max-w-md text-[0.95rem] leading-relaxed text-bone-200">
+                {experiencia.texto}
+              </p>
+              <p className="mt-8 max-w-xs text-[0.7rem] leading-relaxed text-bone-400">
+                {experiencia.legenda}
+              </p>
             </div>
 
-            <p className="pointer-events-none absolute bottom-6 left-10 max-w-xs text-[0.7rem] leading-relaxed text-bone-400">
-              {experiencia.legenda}
-            </p>
-          </div>
+            <div className="col-span-7 flex justify-center">
+              <div className="exp-moldura relative overflow-hidden rounded-[3px] bg-ink-850 shadow-[0_40px_120px_-40px_rgba(0,0,0,1)]">
+                <VideoExperiencia />
+                <span
+                  aria-hidden
+                  className="exp-veu pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/55 to-transparent"
+                />
+              </div>
+            </div>
+          </Container>
         </div>
       </div>
 

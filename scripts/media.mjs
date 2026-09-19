@@ -49,12 +49,13 @@ const FRAMES = [
   // Fachada com o letreiro da academia — primeiro frame do reel.
   { t: 0.2,  name: 'hero-poster' },
 
-  // Duas alunas no salão, olhando para a câmera — melhor foto humana do reel.
-  { t: 31,   name: 'sobre-equipe' },
+  // Fachada da academia, com o letreiro. Substituiu a foto das duas alunas:
+  // as pessoas daquela cena não podem aparecer no site (pedido do cliente).
+  { t: 0.45, name: 'sobre-fachada' },
 
   // ---- estrutura (galeria) ----
   { t: 32,   name: 'estrutura-salao' },      // salão + grama sintética + letreiro UP
-  { t: 17,   name: 'estrutura-cross' },      // assault bike diante da parede RISE UP
+  { t: 13.2, name: 'estrutura-bikes' },      // sala de bikes, sem pessoas em quadro
   { t: 11,   name: 'estrutura-cardio' },     // esteiras sob LED
   { t: 15,   name: 'estrutura-funcional' },  // corda naval sobre grama sintética
   { t: 28,   name: 'estrutura-coletivas' },  // turma com barras na sala espelhada
@@ -65,13 +66,13 @@ const FRAMES = [
   // ---- modalidades ----
   { t: 34,   name: 'modalidade-musculacao' },     // desenvolvimento com barra
   { t: 12,   name: 'modalidade-cardio' },         // esteira
-  { t: 18,   name: 'modalidade-funcional' },      // kettlebell
+  { t: 14.5, name: 'modalidade-funcional' },      // corda naval, sem rosto em quadro
   { t: 22,   name: 'modalidade-lutas' },          // treino de golpes em dupla
   { t: 27,   name: 'modalidade-coletivas' },      // turma na sala espelhada
   { t: 5,    name: 'modalidade-acompanhamento' }, // instrutora orientando aluna
 
   // ---- avulsos ----
-  { t: 26,   name: 'experiencia-capa' },  // aluna de camiseta Rise Up agachando
+  { t: 2.1,  name: 'experiencia-capa' },  // vista ampla do salão, sem rosto em primeiro plano
   { t: 43,   name: 'marca-fachada' },     // letreiro interno da marca
 ];
 

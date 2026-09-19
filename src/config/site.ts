@@ -203,9 +203,9 @@ export const site = {
       texto: 'Ano de fundação, confirmado no registro da empresa.',
     },
     imagem: {
-      src: '/assets/images/sobre-equipe',
-      alt: 'Duas alunas no salão de musculação da Rise Up',
-      foco: '50% 42%',
+      src: '/assets/images/sobre-fachada',
+      alt: 'Fachada da Rise Up Academia, com o letreiro da marca, no bairro São Domingos',
+      foco: '50% 40%',
     },
   },
 
@@ -220,7 +220,7 @@ export const site = {
       'vídeo institucional da academia.',
     galeria: [
       { src: '/assets/images/estrutura-salao', alt: 'Salão da Rise Up com área de grama sintética e o letreiro da marca ao fundo', legenda: 'Salão principal', foco: '50% 56%' },
-      { src: '/assets/images/estrutura-cross', alt: 'Aluna treinando na assault bike em frente à parede com o letreiro Rise Up', legenda: 'Área cross' },
+      { src: '/assets/images/estrutura-bikes', alt: 'Sala de bikes da Rise Up, com as bicicletas enfileiradas sob iluminação de LED', legenda: 'Sala de bikes' },
       { src: '/assets/images/estrutura-cardio', alt: 'Fileira de esteiras da área de cardio sob iluminação de LED', legenda: 'Cardio' },
       { src: '/assets/images/estrutura-funcional', alt: 'Aluno treinando com corda naval sobre a grama sintética da área funcional', legenda: 'Funcional', foco: '50% 58%' },
       { src: '/assets/images/estrutura-coletivas', alt: 'Turma treinando com barras na sala espelhada de aulas coletivas', legenda: 'Aulas coletivas' },
@@ -257,7 +257,7 @@ export const site = {
         nome: 'Funcional & Cross',
         texto: 'Área com grama sintética, corda naval e assault bike para treino intervalado.',
         imagem: '/assets/images/modalidade-funcional',
-        alt: 'Aluna treinando com kettlebell na área funcional',
+        alt: 'Corda naval sobre a grama sintética da área funcional',
       },
       {
         nome: 'Lutas',
@@ -305,8 +305,8 @@ export const site = {
     video: {
       src: '/assets/video/rise-up-experiencia.mp4',
       capa: '/assets/images/experiencia-capa',
-      capaAlt: 'Aluna de camiseta Rise Up agachando com barra na sala de aulas coletivas',
-      foco: '50% 45%',
+      capaAlt: 'Vista ampla do salão de musculação da Rise Up',
+      foco: '50% 50%',
       duracao: '0:44',
     },
     legenda: 'Vídeo institucional da Rise Up Academia · sem edição de terceiros',
@@ -358,7 +358,7 @@ export const site = {
     texto: 'O dia a dia da academia, os treinos e os avisos saem primeiro por lá.',
     /** Prévia local — o site não depende de API nem de embed do Instagram. */
     previa: [
-      { src: '/assets/images/estrutura-cross', alt: 'Área cross da Rise Up' },
+      { src: '/assets/images/estrutura-bikes', alt: 'Sala de bikes da Rise Up' },
       { src: '/assets/images/modalidade-lutas', alt: 'Treino de lutas na Rise Up' },
       { src: '/assets/images/estrutura-coletivas', alt: 'Aula coletiva na Rise Up' },
       { src: '/assets/images/marca-fachada', alt: 'Letreiro Rise Up na parede interna da academia' },
