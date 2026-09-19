@@ -2,17 +2,59 @@
 
 ## Status geral
 
-**CONCLUÍDO** — primeira versão completa, pronta para apresentação comercial.
-Falta apenas o deploy, que depende de acesso ao servidor e do domínio.
+**EM ANDAMENTO** — site e área do aluno prontos e validados. Parado no
+meio da configuração do EasyPanel.
 
 ## Última atualização
 
-19/09/2026
+19/09/2026 — fim da sessão 2
 
 ## Etapa atual
 
-Projeto entregue. Próximo movimento é do cliente: confirmar as pendências
-bloqueantes e liberar domínio + acesso ao EasyPanel.
+Deploy no EasyPanel, interrompido.
+
+### ▶ RETOMAR AQUI
+
+O serviço `riseup-site` já existe no projeto `riseup` do EasyPanel.
+Falta terminar a configuração.
+
+**O bloqueio:** o EasyPanel está numa licença sem integração com o GitHub
+(`/settings` não tem a opção; o painel mostra o aviso "You need a license
+that supports Access Control"). Sem essa integração ele **não enxerga
+repositório privado**. O repo foi tornado público para destravar e depois
+voltou a **privado** — ou seja, o bloqueio continua de pé.
+
+**Duas saídas:**
+
+| Opção | O que fazer |
+|---|---|
+| A — repo público temporário | Tornar público em github.com/jeffmachadoeducarte/riseup-academia-site/settings → Danger Zone. No EasyPanel usar a aba **Git** (não Github) com `https://github.com/jeffmachadoeducarte/riseup-academia-site.git`. Atenção: o EasyPanel reclona a cada deploy, então precisa ficar público enquanto houver deploys. |
+| B — licença paga | Habilita a integração GitHub e o repo pode seguir privado. |
+
+**Configuração que falta no serviço** (nesta ordem):
+
+1. **Fonte** → repo + ramo `main` + caminho `/`
+2. **Build** → Dockerfile, path `Dockerfile`
+3. **Ambiente** → variáveis abaixo
+4. **Montagens** → Volume `riseup-dados` em `/app/dados` ← a aba chama
+   "Montagens", não "Volumes"
+5. **Domínios** → porta `3000`, HTTPS
+6. **Implantar**
+
+```env
+NEXT_PUBLIC_SITE_URL=https://<url-gerada>.easypanel.host
+NEXT_PUBLIC_MODO_PREVIA=true
+NODE_ENV=production
+DATABASE_URL=/app/dados/riseup.db
+RISEUP_SEMEAR_DEMO=true
+RISEUP_CHAVE_SEGREDOS=k9lE2OouUxJle5QdZZWMmT9lhtnOG3fDNsrkztuAk+ZYaJyEVOOxtlhx2U9CwZlN
+```
+
+> `NEXT_PUBLIC_SITE_URL` é lida no BUILD. Depois que o EasyPanel gerar a URL
+> real, corrigir a variável e **implantar de novo**.
+
+**Depois do deploy:** pedir a URL e rodar a bateria de testes contra ela
+(rotas, login aluno/master, responsivo, performance, robots).
 
 ## Etapas concluídas
 
@@ -171,14 +213,27 @@ aulas, grade de horários, equipe, avaliações do Google.
 
 ## Deploy
 
-**Não realizado.** Não houve acesso a servidor, repositório remoto ou
-credenciais do EasyPanel nesta sessão — e o domínio ainda não existe.
+**Não concluído.** O código está publicado; a configuração do painel parou
+no meio. Ver "RETOMAR AQUI" no topo.
 
-Tudo o que depende de código está pronto:
-- `Dockerfile` multi-estágio, usuário não-root, health check
-- `docker-compose.yml`
-- Build de produção validado e rodando localmente
-- `docs/deploy-easypanel.md` com o passo a passo
+Feito:
+- Repositório criado e enviado:
+  `github.com/jeffmachadoeducarte/riseup-academia-site` (privado, branch `main`)
+- `Dockerfile` refeito para SQLite: Debian slim com
+  `--build-from-source=better-sqlite3`, volume `/app/dados`, migração e
+  semeadura no boot via `docker/entrada.sh`, usuário não-root, health check
+- Projeto `riseup` e serviço `riseup-site` criados no EasyPanel
+- `docs/deploy-easypanel.md` atualizado com volume, chave do cofre e semeadura
+
+**Validado sem Docker** (não há Docker nesta máquina): montei o standalone à
+mão e rodei o `entrada.sh`. Migração em banco zerado, semeadura idempotente,
+site, `/api/health`, `robots.txt` em modo prévia, 404, login de aluno e de
+master — tudo passou. O `drizzle-orm` não entra no build standalone (mesmo
+caso do Educarte) e o Dockerfile já o copia explicitamente.
+
+⚠️ **A imagem Docker em si nunca foi construída.** O Dockerfile espelha o do
+Educarte, que funciona em produção, mas o primeiro build real pode revelar
+algo — vale acompanhar o log.
 
 **Validado localmente** (build de produção, não apenas `next build`):
 
