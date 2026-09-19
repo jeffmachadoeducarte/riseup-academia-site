@@ -6,6 +6,7 @@ node_modules
 docs
 reels
 assets/source
-scripts
+dados
 *.md
-.env*
+.env
+.env.*.local

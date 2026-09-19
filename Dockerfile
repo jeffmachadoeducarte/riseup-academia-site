@@ -1,66 +1,81 @@
+# syntax=docker/dockerfile:1
 # ══════════════════════════════════════════════════════════════════════════
 #  RISE UP ACADEMIA — imagem de produção
-#  Build multi-estágio: a imagem final leva só o runtime, sem toolchain.
+#
+#  Debian slim, não Alpine: better-sqlite3 é módulo nativo e precisa compilar
+#  contra a mesma ABI do Node desta imagem.
 # ══════════════════════════════════════════════════════════════════════════
 
-# ---------- 1. dependências ------------------------------------------------
-FROM node:22-alpine AS deps
+# ---------------------------------------------------------- dependências
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
-# Só os manifests: essa camada só é refeita quando as dependências mudam.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 make g++ ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
+RUN npm ci --build-from-source=better-sqlite3
 
-# `--ignore-scripts` evita postinstall de terceiros durante o build.
-# Os binários de ffmpeg são devDependencies e não entram na imagem: a mídia
-# já vem gerada em `public/assets`.
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
-
-# ---------- 2. build -------------------------------------------------------
-FROM node:22-alpine AS builder
+# ----------------------------------------------------------------- build
+FROM node:22-bookworm-slim AS build
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
-
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Domínio final: usado em canonical, sitemap, robots e Open Graph.
+# Lidas no BUILD: entram no HTML estático (canonical, sitemap, Open Graph).
+# Mudou o domínio ou saiu da prévia? Precisa refazer o deploy.
 ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 
-# "true" (padrão) = prévia, sai do índice dos buscadores.
-# "false" = site oficial, indexável. Ver docs/deploy-easypanel.md.
 ARG NEXT_PUBLIC_MODO_PREVIA=true
 ENV NEXT_PUBLIC_MODO_PREVIA=${NEXT_PUBLIC_MODO_PREVIA}
 
 RUN npm run build
 
-# ---------- 3. runtime -----------------------------------------------------
-FROM node:22-alpine AS runner
+# -------------------------------------------------------------- runtime
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0 \
+    DATABASE_URL=/app/dados/riseup.db
 
-# Nunca rodar como root.
-RUN addgroup --system --gid 1001 nodejs \
- && adduser --system --uid 1001 --ingroup nodejs nextjs
+RUN groupadd -r riseup && useradd -r -g riseup riseup
 
-# `output: 'standalone'` monta um servidor mínimo com só o que é usado.
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+# O standalone traz o server.js e o better-sqlite3 já compilado.
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
 
-USER nextjs
+# Migração e semeadura rodam no boot. O drizzle-orm fica fora do standalone
+# (é embutido nas rotas), então vai explícito para os scripts.
+COPY --from=build /app/drizzle ./drizzle
+COPY --from=build /app/scripts/migrar.mjs ./scripts/migrar.mjs
+COPY --from=build /app/scripts/semear-producao.mjs ./scripts/semear-producao.mjs
+COPY --from=build /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
+
+COPY docker/entrada.sh /usr/local/bin/entrada.sh
+RUN chmod +x /usr/local/bin/entrada.sh
+
+# O banco vive num volume: sobrevive a redeploy.
+RUN mkdir -p /app/dados && chown -R riseup:riseup /app/dados
+VOLUME /app/dados
+
+# O Next grava cache aqui. Sem o chown o servidor (que roda como `riseup`)
+# leva EACCES e refaz trabalho a cada visita.
+RUN mkdir -p /app/.next/cache && chown -R riseup:riseup /app/.next
+
+USER riseup
 EXPOSE 3000
 
-# O EasyPanel usa isto para saber se o contêiner subiu de fato.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["/usr/local/bin/entrada.sh"]

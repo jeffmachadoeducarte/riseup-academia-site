@@ -5,7 +5,8 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://riseupacademia.com.br}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_MODO_PREVIA: ${NEXT_PUBLIC_MODO_PREVIA:-true}
     image: rise-up-academia:latest
     container_name: rise-up-academia
     restart: unless-stopped
@@ -13,10 +14,21 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://riseupacademia.com.br}
+      DATABASE_URL: /app/dados/riseup.db
+      # Cofre dos tokens de integração. Trocar torna ilegível o que foi
+      # guardado com a chave anterior.
+      RISEUP_CHAVE_SEGREDOS: ${RISEUP_CHAVE_SEGREDOS:?defina uma chave de 32+ caracteres}
+      # Dados de demonstração no primeiro boot. Desligue em produção real.
+      RISEUP_SEMEAR_DEMO: ${RISEUP_SEMEAR_DEMO:-false}
+    volumes:
+      # Sem isto o banco some a cada deploy.
+      - riseup-dados:/app/dados
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 20s
+      start_period: 25s
+
+volumes:
+  riseup-dados:

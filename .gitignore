@@ -16,3 +16,7 @@ next-env.d.ts
 # assets/source/rise-up-reel-original.mp4, que é a fonte do pipeline de mídia.
 # Fica fora do Git para não duplicar 15 MB — o arquivo segue intacto em disco.
 reels/
+
+# Banco SQLite da área do aluno. Em produção vive num volume do EasyPanel
+# montado em /app/dados — nunca no repositório.
+dados/

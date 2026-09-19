@@ -147,11 +147,27 @@ export const site = {
     etiqueta: `Navegantes · SC — desde ${2014}`,
     /** Copy criada para este projeto. Não é slogan oficial da marca. */
     titulo: ['Suba', 'o nível'],
+    /** Linha de reforço logo abaixo do título. Também é copy proposta. */
+    chamada: 'Mais que uma academia, um estilo de vida.',
     subtitulo:
       'Musculação, cardio, funcional, lutas e aulas coletivas em um só lugar. ' +
-      'Estrutura completa no São Domingos, aberta das 6h às 23h.',
-    ctaPrimario: { rotulo: 'Quero conhecer', href: '#localizacao' },
-    ctaSecundario: { rotulo: 'Falar no WhatsApp', href: 'whatsapp' as const },
+      'Estrutura completa para você treinar com propósito.',
+
+    /** Selos de destaque sobre o vídeo. `icone` casa com o mapa em Hero.tsx. */
+    destaques: [
+      { icone: 'halter', linhas: ['Musculação', 'completa'] },
+      { icone: 'coracao', linhas: ['Cardio', 'moderno'] },
+      { icone: 'grupo', linhas: ['Aulas', 'coletivas'] },
+      { icone: 'luva', linhas: ['Lutas e', 'funcional'] },
+    ],
+
+    /** Rótulo do indicador de rolagem, no rodapé do hero. */
+    rolar: 'Conheça a Rise Up',
+
+    /** Palavras verticais na lateral direita do hero. */
+    mantra: ['Disciplina', 'Resultados', 'Evolução', 'Sempre'],
+    ctaPrimario: { rotulo: 'Quero subir o nível', href: 'whatsapp' as const },
+    ctaSecundario: { rotulo: 'Já sou aluno', href: '/entrar' },
     /** Métricas exibidas sob o hero — apenas dados verificáveis. */
     indicadores: [
       { valor: '2014', rotulo: 'Desde' },

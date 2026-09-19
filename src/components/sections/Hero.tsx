@@ -5,7 +5,19 @@ import { site, resolverHref } from '@/config/site';
 import { cn } from '@/lib/cn';
 import { Container } from '@/components/ui/Container';
 import { Triangulo } from '@/components/ui/Logo';
-import { IconWhatsApp, IconArrow } from '@/components/ui/Icons';
+import Link from 'next/link';
+import {
+  IconWhatsApp, IconArrow, IconUsuario, IconHalter, IconCoracao,
+  IconGrupo, IconLuva, IconClock,
+} from '@/components/ui/Icons';
+
+/** Liga a chave do config ao componente de ícone. */
+const ICONES = {
+  halter: IconHalter,
+  coracao: IconCoracao,
+  grupo: IconGrupo,
+  luva: IconLuva,
+} as const;
 
 const { hero } = site;
 
@@ -81,7 +93,7 @@ export function Hero() {
     <section
       id="inicio"
       aria-label="Apresentação da Rise Up Academia"
-      className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-ink-950 pb-16 pt-32 lg:justify-center lg:pb-24"
+      className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-ink-950 pb-14 pt-28 [@media(max-height:700px)]:pt-24 sm:pb-16 sm:pt-32 lg:justify-center lg:pb-32"
     >
       {/* ═══════════════════════════════════════════════ camada de vídeo */}
       <div
@@ -128,13 +140,13 @@ export function Hero() {
 
       {/* ═══════════════════════════════════════════════════ conteúdo */}
       <Container size="wide">
-        <div className="max-w-2xl lg:max-w-[38rem]">
+        <div className="max-w-2xl lg:max-w-[43rem]">
           <p className="reveal t-eyebrow flex items-center gap-3 text-bone-200" data-visible="true">
             <Triangulo className="h-2.5 w-2.5 text-rise-500" />
             {hero.etiqueta}
           </p>
 
-          <h1 className="t-display mt-6 text-[clamp(3.25rem,13vw,8.5rem)] text-bone-50">
+          <h1 className="t-display mt-6 text-[clamp(2.85rem,12.5vw,8.5rem)] text-bone-50 [@media(max-height:700px)]:mt-5 [@media(max-height:700px)]:text-[2.5rem]">
             <span className="block overflow-hidden">
               <span className="reveal block" data-visible="true">
                 {hero.titulo[0]}
@@ -151,74 +163,188 @@ export function Hero() {
             </span>
           </h1>
 
+          {/* ── chamada + descrição ─────────────────────────────────── */}
           <p
-            className="reveal mt-7 max-w-lg text-[0.975rem] leading-relaxed text-bone-200 sm:text-base"
-            style={{ '--reveal-delay': '220ms' } as React.CSSProperties}
+            className="reveal mt-5 max-w-lg text-[clamp(1rem,2.1vw,1.35rem)] sm:mt-6 leading-snug text-bone-50"
+            style={{ '--reveal-delay': '200ms' } as React.CSSProperties}
+            data-visible="true"
+          >
+            {hero.chamada}
+          </p>
+
+          <p
+            className="reveal mt-3 max-w-md text-[0.9rem] sm:mt-4 sm:text-[0.925rem] leading-relaxed text-bone-400"
+            style={{ '--reveal-delay': '260ms' } as React.CSSProperties}
             data-visible="true"
           >
             {hero.subtitulo}
           </p>
 
-          <div
-            className="reveal mt-10 flex flex-col gap-3 sm:flex-row sm:items-center"
+          {/* ── selos de destaque ───────────────────────────────────── */}
+          <ul
+            className="reveal mt-6 grid grid-cols-2 gap-2.5 sm:mt-8 sm:flex sm:flex-wrap sm:gap-x-5 sm:gap-y-3"
             style={{ '--reveal-delay': '320ms' } as React.CSSProperties}
             data-visible="true"
           >
-            <a
-              href={resolverHref(hero.ctaPrimario.href)}
-              className="group inline-flex items-center justify-center gap-2.5 rounded-[2px] bg-rise-500 px-8 py-4 font-display text-[0.8125rem] font-bold uppercase tracking-[0.14em] text-white shadow-[0_14px_36px_-14px_rgba(240,74,37,0.8)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-rise-400"
-            >
-              {hero.ctaPrimario.rotulo}
-              <IconArrow className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
+            {hero.destaques.map((d) => {
+              const Icone = ICONES[d.icone as keyof typeof ICONES];
+              return (
+                <li key={d.linhas.join(' ')} className="flex items-center gap-2.5">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[4px] border border-rise-500/25 bg-rise-500/10 text-rise-500">
+                    <Icone className="h-[1.05rem] w-[1.05rem]" />
+                  </span>
+                  <span className="text-[0.66rem] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-bone-200">
+                    {d.linhas[0]}
+                    <br />
+                    {d.linhas[1]}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
 
-            <a
-              href={resolverHref(hero.ctaSecundario.href)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2.5 rounded-[2px] border border-bone-50/25 bg-white/[0.04] px-8 py-4 font-display text-[0.8125rem] font-bold uppercase tracking-[0.14em] text-bone-50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-bone-50/60 hover:bg-white/[0.09]"
-            >
-              <IconWhatsApp className="h-4 w-4" />
-              {hero.ctaSecundario.rotulo}
-            </a>
-          </div>
-
-          {/* ---------------------------------------------- indicadores */}
-          <dl
-            className="reveal mt-14 grid grid-cols-3 gap-x-4 border-t border-ink-700/70 pt-7 sm:flex sm:flex-wrap sm:items-start sm:gap-x-14"
-            style={{ '--reveal-delay': '420ms' } as React.CSSProperties}
+          {/* ── horários de funcionamento ───────────────────────────── */}
+          <div
+            className="reveal mt-5 w-fit rounded-[4px] border border-ink-700/90 bg-ink-950/50 px-4 py-3.5 backdrop-blur-sm sm:mt-7 sm:px-5 sm:py-4"
+            style={{ '--reveal-delay': '380ms' } as React.CSSProperties}
             data-visible="true"
           >
-            {hero.indicadores.map((item) => (
-              <div key={item.rotulo}>
-                <dt className="text-[0.625rem] font-semibold uppercase tracking-[0.2em] text-bone-500">
-                  {item.rotulo}
-                </dt>
-                <dd className="t-display mt-1.5 text-2xl text-bone-50 sm:text-[1.75rem]">
-                  {item.valor}
-                </dd>
+            <dl className="flex flex-wrap items-center gap-x-5 gap-y-4 sm:flex-nowrap sm:gap-x-6">
+              <div className="flex shrink-0 items-center gap-3 sm:border-r sm:border-ink-700 sm:pr-6">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-rise-500/30 text-rise-500">
+                  <IconClock className="h-[1.05rem] w-[1.05rem]" />
+                </span>
+                <span className="text-[0.62rem] font-semibold uppercase leading-[1.3] tracking-[0.14em] text-bone-300">
+                  Horários
+                  <br />
+                  de funcionamento
+                </span>
               </div>
-            ))}
-          </dl>
+
+              {site.horarios.lista.map((h, i) => (
+                <div
+                  key={h.dias}
+                  className={
+                    i < site.horarios.lista.length - 1
+                      ? 'shrink-0 sm:border-r sm:border-ink-700 sm:pr-6'
+                      : 'shrink-0'
+                  }
+                >
+                  <dt className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-rise-500">
+                    {h.dias}
+                  </dt>
+                  <dd
+                    className={
+                      h.aberto
+                        ? 'mt-1 font-display text-[1.05rem] font-bold text-bone-50'
+                        : 'mt-1 text-[0.95rem] text-bone-500'
+                    }
+                  >
+                    {h.horas}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          {/* ── chamadas para ação ──────────────────────────────────── */}
+          <div
+            className="reveal mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:items-center sm:gap-3"
+            style={{ '--reveal-delay': '440ms' } as React.CSSProperties}
+            data-visible="true"
+          >
+            {/* CTA de conversão — abre o WhatsApp da academia */}
+            <a
+              href={resolverHref(hero.ctaPrimario.href)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-[2px] bg-rise-500 px-8 py-4 font-display text-sm font-bold uppercase tracking-[0.14em] text-white sm:px-9 sm:py-5 shadow-[0_18px_44px_-14px_rgba(240,74,37,0.9)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-rise-400 hover:shadow-[0_24px_56px_-14px_rgba(240,74,37,1)]"
+            >
+              {/* brilho que atravessa o botão no hover */}
+              <span
+                aria-hidden
+                className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+              />
+              <IconWhatsApp className="relative h-[1.15rem] w-[1.15rem]" />
+              <span className="relative">{hero.ctaPrimario.rotulo}</span>
+              <IconArrow className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </a>
+
+            {/* Acesso de quem já treina na academia */}
+            <Link
+              href={hero.ctaSecundario.href}
+              className="group inline-flex items-center justify-center gap-3 rounded-[2px] border border-bone-50/30 bg-white/[0.05] px-8 py-4 font-display text-sm font-bold uppercase tracking-[0.14em] text-bone-50 backdrop-blur-md sm:px-9 sm:py-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-rise-500 hover:bg-rise-500/10"
+            >
+              <IconUsuario className="h-[1.15rem] w-[1.15rem] text-rise-500 transition-transform duration-300 group-hover:scale-110" />
+              {hero.ctaSecundario.rotulo}
+            </Link>
+          </div>
         </div>
       </Container>
 
-      {/* ═══════════════════════════════════ controle de reprodução */}
+      {/* ══════════════════════════════ rodapé do hero ═══════════════════ */}
+      <Container size="wide" className="relative mt-9 sm:mt-12 lg:absolute lg:inset-x-0 lg:bottom-10 lg:mt-0">
+        <div className="flex items-end justify-between gap-8">
+          {/* indicador de rolagem */}
+          <a
+            href="#sobre"
+            className="reveal group flex flex-1 items-center gap-4"
+            style={{ '--reveal-delay': '520ms' } as React.CSSProperties}
+            data-visible="true"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-bone-50/25 text-bone-200 transition-colors duration-300 group-hover:border-rise-500 group-hover:text-rise-500">
+              <IconArrow className="h-4 w-4 rotate-90 transition-transform duration-500 group-hover:translate-y-0.5" />
+            </span>
+            <span className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-bone-400 transition-colors group-hover:text-bone-200">
+              {hero.rolar}
+            </span>
+            {/* régua que se estende até a borda da composição */}
+            <span
+              aria-hidden
+              className="hidden h-px flex-1 bg-gradient-to-r from-ink-600 via-ink-700 to-transparent sm:block"
+            />
+          </a>
+
+          {/* palavras da marca, empilhadas */}
+          <ul
+            aria-hidden
+            className="reveal hidden shrink-0 text-right lg:block"
+            style={{ '--reveal-delay': '580ms' } as React.CSSProperties}
+            data-visible="true"
+          >
+            {hero.mantra.map((palavra) => (
+              <li
+                key={palavra}
+                className="text-[0.62rem] font-semibold uppercase leading-[1.7] tracking-[0.24em] text-bone-500"
+              >
+                {palavra}
+              </li>
+            ))}
+            <li className="mt-2 ml-auto h-px w-10 bg-rise-500" />
+          </ul>
+        </div>
+      </Container>
+
+      {/* ══════════════════════════════════ controle de reprodução
+          A WCAG 2.2.2 exige um jeito de parar conteúdo em movimento que passa
+          de 5 s. O controle não aparece na composição — ele só se materializa
+          quando alguém chega nele pelo teclado (Tab). Visualmente o hero fica
+          limpo; para quem navega por teclado, o vídeo continua controlável. */}
       {pronto && (
         <button
           type="button"
           onClick={alternar}
           aria-label={tocando ? 'Pausar vídeo de fundo' : 'Reproduzir vídeo de fundo'}
-          className="absolute bottom-6 right-5 z-10 flex items-center gap-2 rounded-full border border-bone-50/25 bg-ink-950/60 px-4 py-2.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-bone-200 backdrop-blur-md transition-colors hover:border-bone-50/60 hover:text-bone-50 sm:bottom-8 lg:right-12"
+          className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:bottom-6 focus-visible:right-5 focus-visible:z-20 focus-visible:flex focus-visible:items-center focus-visible:gap-2 focus-visible:rounded-full focus-visible:border focus-visible:border-bone-50/40 focus-visible:bg-ink-950/90 focus-visible:px-4 focus-visible:py-2.5 focus-visible:text-[0.625rem] focus-visible:font-semibold focus-visible:uppercase focus-visible:tracking-[0.18em] focus-visible:text-bone-50 focus-visible:backdrop-blur-md sm:focus-visible:bottom-8 lg:focus-visible:right-12"
         >
           <span
             aria-hidden
             className={cn(
-              'block h-1.5 w-1.5 rounded-full transition-colors',
+              'block h-1.5 w-1.5 rounded-full',
               tocando ? 'bg-rise-500' : 'bg-bone-500',
             )}
           />
-          {tocando ? 'Pausar' : 'Reproduzir'}
+          {tocando ? 'Pausar vídeo' : 'Reproduzir vídeo'}
         </button>
       )}
     </section>

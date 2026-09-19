@@ -76,7 +76,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${archivo.variable} ${inter.variable}`}>
+    <html
+      lang="pt-BR"
+      // O Next 16 avisa sobre scroll-behavior:smooth em transições de rota;
+      // este atributo confirma que o efeito é intencional.
+      data-scroll-behavior="smooth"
+      className={`${archivo.variable} ${inter.variable}`}
+    >
       <head>
         {/* O hero é o LCP: o poster precisa chegar antes de qualquer outra imagem. */}
         <link
