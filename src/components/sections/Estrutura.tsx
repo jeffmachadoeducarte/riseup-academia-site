@@ -8,6 +8,7 @@ import { SectionTitle } from '@/components/ui/SectionTitle';
 import { Figura } from '@/components/ui/Figura';
 import { IconClose, IconArrow } from '@/components/ui/Icons';
 import { useProgressoScroll } from '@/hooks/useProgressoScroll';
+import { versionado } from '@/config/midia';
 
 const { estrutura } = site;
 const itens = estrutura.galeria;
@@ -210,7 +211,7 @@ export function Estrutura() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`${atual.src}-720.jpg`}
+                src={versionado(`${atual.src}-720.jpg`)}
                 alt={atual.alt}
                 width={720}
                 height={1280}

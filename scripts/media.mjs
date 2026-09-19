@@ -14,7 +14,8 @@
  * sistema, o que estiver disponível.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, statSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, statSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -192,6 +193,58 @@ function buildImages() {
   }
 }
 
+/* ------------------------------------------------- manifesto de versões */
+
+/**
+ * Escreve `src/config/midia.ts` com a impressão digital de cada arquivo
+ * gerado.
+ *
+ * Por que isso existe: os arquivos são servidos com cache de um ano e
+ * `immutable`, mas os nomes NÃO mudam quando o conteúdo muda — trocar a foto
+ * de uma seção mantinha o mesmo caminho. Resultado: quem já tinha visitado o
+ * site continuava vendo a imagem antiga por um ano.
+ *
+ * Com o hash no fim da URL (`?v=…`), trocar o conteúdo troca o endereço, o
+ * navegador busca de novo, e o cache longo volta a ser seguro.
+ */
+function escreverManifesto() {
+  const mapa = {};
+
+  for (const [chave, dir] of Object.entries(OUT)) {
+    if (!existsSync(dir)) continue;
+    for (const arquivo of readdirSync(dir)) {
+      const caminho = path.join(dir, arquivo);
+      if (!statSync(caminho).isFile()) continue;
+      const hash = createHash('sha1').update(readFileSync(caminho)).digest('hex').slice(0, 8);
+      mapa[`/assets/${chave === 'video' ? 'video' : chave}/${arquivo}`] = hash;
+    }
+  }
+
+  const linhas = Object.keys(mapa).sort().map((k) => `  '${k}': '${mapa[k]}',`);
+
+  const conteudo = `/**
+ * GERADO POR scripts/media.mjs — não editar à mão.
+ *
+ * Impressão digital de cada arquivo de mídia. Usada para versionar a URL
+ * (\`?v=…\`), já que os nomes dos arquivos são estáveis e o cache é de um ano.
+ * Sem isto, trocar uma foto não chegaria a quem já visitou o site.
+ */
+export const MIDIA: Record<string, string> = {
+${linhas.join('\n')}
+};
+
+/** Acrescenta a versão ao caminho. Caminho desconhecido volta intacto. */
+export function versionado(caminho: string) {
+  const hash = MIDIA[caminho];
+  return hash ? \`\${caminho}?v=\${hash}\` : caminho;
+}
+`;
+
+  const destino = path.join(ROOT, 'src/config/midia.ts');
+  writeFileSync(destino, conteudo);
+  console.log(`  · ${path.relative(ROOT, destino)} — ${linhas.length} arquivos versionados`);
+}
+
 /* ------------------------------------------------------------------ main */
 
 function main() {
@@ -211,6 +264,9 @@ function main() {
   buildVideos();
   console.log('\nIMAGENS');
   buildImages();
+
+  console.log('\nMANIFESTO');
+  escreverManifesto();
 
   console.log('\n✔ Concluído. Original preservado intacto.\n');
 }

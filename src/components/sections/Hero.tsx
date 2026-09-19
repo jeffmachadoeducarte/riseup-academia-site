@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useProgressoScroll } from '@/hooks/useProgressoScroll';
+import { versionado } from '@/config/midia';
 import { site, resolverHref } from '@/config/site';
 import { cn } from '@/lib/cn';
 import { Container } from '@/components/ui/Container';
@@ -66,11 +67,9 @@ export function Hero() {
 
     // WebM (VP9) quando suportado; MP4 como alternativa universal.
     const suportaWebm = el.canPlayType('video/webm; codecs="vp9"') !== '';
-    el.src = mobile
-      ? hero.video.mp4Mobile
-      : suportaWebm
-        ? hero.video.webm
-        : hero.video.mp4;
+    el.src = versionado(
+      mobile ? hero.video.mp4Mobile : suportaWebm ? hero.video.webm : hero.video.mp4,
+    );
 
     el.load();
 
@@ -115,7 +114,7 @@ export function Hero() {
       >
         <video
           ref={video}
-          poster={hero.video.poster}
+          poster={versionado(hero.video.poster)}
           muted
           loop
           playsInline

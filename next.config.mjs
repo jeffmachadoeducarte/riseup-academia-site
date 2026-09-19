@@ -51,7 +51,10 @@ const nextConfig = {
     return [
       { source: '/:path*', headers: security },
       {
-        // Mídia gerada pelo pipeline tem hash de conteúdo no nome do arquivo.
+        // Os nomes dos arquivos de mídia são estáveis, então o cache longo só
+        // é seguro porque cada URL carrega `?v=<hash do conteúdo>`, escrito
+        // por scripts/media.mjs em src/config/midia.ts. Trocar uma foto muda
+        // o hash, muda a URL, e o navegador busca a nova.
         source: '/assets/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },

@@ -280,6 +280,7 @@ Nenhum. O projeto estava vazio; o reel original foi **copiado**, não movido —
 | Mapa do Google branco sobre site escuro | Filtro de inversão + rotação de matiz; volta ao normal no hover |
 | Botão flutuante cobria os links legais do rodapé | Some quando o rodapé entra na viewport |
 | Poster do vídeo da Experiência baixava sempre (82 KB fora da dobra) | `poster` removido; capa virou `<img loading="lazy">` |
+| **Troca de foto não chegava a quem já tinha visitado** — `/assets/*` ia com cache de 1 ano e `immutable`, mas os nomes dos arquivos são estáveis | `scripts/media.mjs` passou a gerar `src/config/midia.ts` com o hash de cada arquivo; toda URL de mídia leva `?v=<hash>`. Trocar o conteúdo troca a URL. |
 | Alvos de toque abaixo de 24px (telefone, links de fonte) | Padding vertical; todos ≥ 29px |
 | Copy dizia "Dez anos" mas o cálculo dava 12 | Texto tornado atemporal ("desde 2014"); o número é calculado |
 | Copy dizia "quarenta e cinco segundos", vídeo tem 44 | Corrigido |

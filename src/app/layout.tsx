@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Archivo, Inter } from 'next/font/google';
 import { site } from '@/config/site';
 import { gymJsonLd, siteJsonLd } from '@/lib/schema';
+import { versionado } from '@/config/midia';
 import './globals.css';
 
 /* Display pesado e levemente condensado, no espírito do letreiro da marca. */
@@ -88,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link
           rel="preload"
           as="image"
-          href={site.hero.video.poster}
+          href={versionado(site.hero.video.poster)}
           fetchPriority="high"
         />
         <script

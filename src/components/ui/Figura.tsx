@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { versionado } from '@/config/midia';
 
 type Props = {
   /** Caminho base sem sufixo de tamanho, ex.: `/assets/images/estrutura-salao` */
@@ -42,12 +43,12 @@ export function Figura({
     <picture className={cn('block h-full w-full', className)}>
       <source
         type="image/webp"
-        srcSet={`${base}-480.webp 480w, ${base}-720.webp 720w`}
+        srcSet={`${versionado(`${base}-480.webp`)} 480w, ${versionado(`${base}-720.webp`)} 720w`}
         sizes={sizes}
       />
       <img
-        src={`${base}-720.jpg`}
-        srcSet={`${base}-480.jpg 480w, ${base}-720.jpg 720w`}
+        src={versionado(`${base}-720.jpg`)}
+        srcSet={`${versionado(`${base}-480.jpg`)} 480w, ${versionado(`${base}-720.jpg`)} 720w`}
         sizes={sizes}
         alt={alt}
         width={720}

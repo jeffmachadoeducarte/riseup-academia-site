@@ -5,6 +5,7 @@ import { site } from '@/config/site';
 import { usuarioAtual, destinoDoPerfil } from '@/lib/auth';
 import { Logo } from '@/components/ui/Logo';
 import { IconArrow } from '@/components/ui/Icons';
+import { versionado } from '@/config/midia';
 import { FormularioEntrar } from './formulario';
 
 export const metadata: Metadata = {
@@ -86,12 +87,12 @@ export default async function Entrar() {
             loop
             playsInline
             preload="none"
-            poster={site.hero.video.poster}
+            poster={versionado(site.hero.video.poster)}
             aria-hidden="true"
             tabIndex={-1}
             className="h-full w-full object-cover"
           >
-            <source src={site.hero.video.mp4} type="video/mp4" />
+            <source src={versionado(site.hero.video.mp4)} type="video/mp4" />
           </video>
         </div>
 

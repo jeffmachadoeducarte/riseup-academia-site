@@ -8,6 +8,7 @@ import { Triangulo } from '@/components/ui/Logo';
 import { IconSom, IconSomMudo } from '@/components/ui/Icons';
 import { useProgressoScroll } from '@/hooks/useProgressoScroll';
 import { useVideoNaTela } from '@/hooks/useVideoNaTela';
+import { versionado } from '@/config/midia';
 
 const { experiencia, marca } = site;
 
@@ -30,8 +31,8 @@ function VideoExperiencia({ className }: { className?: string }) {
     <>
       <video
         ref={video}
-        src={experiencia.video.src}
-        poster={`${experiencia.video.capa}-720.jpg`}
+        src={versionado(experiencia.video.src)}
+        poster={versionado(`${experiencia.video.capa}-720.jpg`)}
         preload="metadata"
         playsInline
         loop
@@ -97,7 +98,7 @@ export function Experiencia() {
               tela cheia sem esticar o vídeo nítido. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`${experiencia.video.capa}-720.jpg`}
+            src={versionado(`${experiencia.video.capa}-720.jpg`)}
             alt=""
             aria-hidden
             className="exp-ambiente pointer-events-none absolute inset-0 h-full w-full object-cover"
