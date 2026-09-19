@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     description: site.seo.descricao,
     images: [
       {
-        url: site.seo.ogImage,
+        url: versionado(site.seo.ogImage),
         width: 720,
         height: 1280,
         alt: `Fachada da ${site.marca.nome}, em ${site.marca.cidade}`,
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: site.seo.titulo,
     description: site.seo.descricao,
-    images: [site.seo.ogImage],
+    images: [versionado(site.seo.ogImage)],
   },
   category: 'fitness',
   formatDetection: { telephone: true, address: true },

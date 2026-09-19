@@ -1,4 +1,5 @@
 import { site } from '@/config/site';
+import { versionado } from '@/config/midia';
 
 /**
  * Dados estruturados schema.org para SEO local.
@@ -18,7 +19,7 @@ export function gymJsonLd() {
     legalName: marca.razaoSocial,
     description: seo.descricao,
     url: seo.url,
-    image: `${seo.url}${seo.ogImage}`,
+    image: `${seo.url}${versionado(seo.ogImage)}`,
     logo: `${seo.url}/icon.svg`,
     telephone: contato.telefone.e164,
     foundingDate: String(marca.fundacao),
