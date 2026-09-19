@@ -1,0 +1,13 @@
+{
+  "name": "Rise Up Academia — Navegantes/SC",
+  "short_name": "Rise Up",
+  "description": "Academia em Navegantes/SC desde 2014. Musculação, cardio, funcional, lutas e aulas coletivas.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070709",
+  "theme_color": "#070709",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

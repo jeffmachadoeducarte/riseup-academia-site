@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RISE UP ACADEMIA — DESIGN SYSTEM
+   ───────────────────────────────────────────────────────────────────────
+   Cores extraídas por amostragem de pixel do letreiro oficial da academia
+   (fachada e parede interna, frames do reel institucional).
+   Documentação da decisão: docs/pesquisa-rise-up.md §6
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ---- marca -------------------------------------------------------- */
+  --color-rise-500: #f04a25;   /* laranja do letreiro — cor primária     */
+  --color-rise-400: #ff5c34;   /* hover / brilho                          */
+  --color-rise-600: #d13a18;   /* pressionado                             */
+  --color-rise-700: #9e2a0f;   /* bordas e sombras quentes                */
+
+  /* ---- neutros (base do site) --------------------------------------- */
+  --color-ink-950: #070709;    /* fundo da página                         */
+  --color-ink-900: #0b0b0e;    /* fundo de seção alternada                */
+  --color-ink-850: #111115;    /* superfície de card                      */
+  --color-ink-800: #17171c;    /* superfície elevada                      */
+  --color-ink-700: #24242b;    /* borda forte                             */
+  --color-ink-600: #3a3a44;    /* borda sutil sobre superfície            */
+
+  --color-bone-50: #f6f2ef;    /* branco quente do "UP" do letreiro       */
+  --color-bone-200: #d6d2ce;   /* texto secundário                        */
+  --color-bone-400: #9b9791;   /* texto terciário / legendas              */
+  --color-bone-500: #7c7873;   /* texto desativado                        */
+
+  /* ---- tipografia ---------------------------------------------------- */
+  --font-display: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+  /* ---- ritmo / profundidade ------------------------------------------ */
+  --radius-card: 2px;          /* cantos quase retos — linguagem esportiva */
+  --shadow-lift: 0 24px 60px -24px rgb(0 0 0 / 0.85);
+  --shadow-glow: 0 0 0 1px rgb(240 74 37 / 0.35), 0 18px 50px -20px rgb(240 74 37 / 0.45);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ═══════════════════════════════════════════ base ══════════════════════ */
+
+@layer base {
+  * { @apply border-ink-700; }
+
+  html {
+    scroll-behavior: smooth;
+    /* compensa o header fixo ao navegar por âncoras */
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-bone-50);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-rise-500);
+    color: #fff;
+  }
+
+  /* foco visível e consistente em todo o site */
+  :focus-visible {
+    outline: 2px solid var(--color-rise-400);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* trilho de rolagem discreto, alinhado ao tema escuro */
+  @supports (scrollbar-color: red blue) {
+    html { scrollbar-color: var(--color-ink-700) var(--color-ink-950); scrollbar-width: thin; }
+  }
+}
+
+/* ═══════════════════════════════════ utilitários ═══════════════════════ */
+
+@layer utilities {
+  /* --- tipografia de display ------------------------------------------ */
+  .font-display { font-family: var(--font-display); }
+
+  /* Título de seção: pesado, caixa alta, entrelinha fechada. */
+  .t-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+    text-wrap: balance;
+  }
+
+  /* Etiqueta acima do título: pequena, espaçada, laranja. */
+  .t-eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+  }
+
+  /* --- textura de grão: dá peso cinematográfico ao fundo chapado ------ */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.32;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  /* --- linha de régua fina usada entre blocos editoriais -------------- */
+  .rule {
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      var(--color-ink-700) 12%,
+      var(--color-ink-700) 88%,
+      transparent
+    );
+  }
+
+  /* --- revelação no scroll (controlada por IntersectionObserver) ------ */
+  .reveal {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+    transition:
+      opacity 0.85s var(--ease-out-soft),
+      transform 0.85s var(--ease-out-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  .reveal[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* variante usada em títulos grandes: entra com leve escala */
+  .reveal-scale {
+    opacity: 0;
+    transform: scale(1.04);
+    transition:
+      opacity 1s var(--ease-out-soft),
+      transform 1.2s var(--ease-out-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal-scale[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* --- máscara de degradê no rodapé de imagens ------------------------ */
+  .fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  }
+
+  /* --- faixa que rola horizontalmente (marquee) ----------------------- */
+  .marquee-track {
+    animation: marquee 38s linear infinite;
+  }
+}
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* ═══════════════════ acessibilidade: movimento reduzido ════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* conteúdo revelado por scroll precisa aparecer imediatamente */
+  .reveal,
+  .reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .marquee-track { animation: none !important; }
+}
+
+/* ═══════════════════════════ impressão ═════════════════════════════════ */
+
+@media print {
+  body { background: #fff; color: #000; }
+  video, iframe, header, .no-print { display: none !important; }
+}
